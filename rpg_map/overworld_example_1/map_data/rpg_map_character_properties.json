@@ -1,0 +1,17 @@
+{
+  "init":{
+    "mainCharacter_x":3,
+    "mainCharacter_y":3,
+    "mainCharacter_texture":"'down'"
+  },
+  "texture":{
+    "up":"../rpg_data/textures/up.png",
+    "right":"../rpg_data/textures/right.png",
+    "down":"../rpg_data/textures/down.png",
+    "left":"../rpg_data/textures/left.png",
+    "up_left":"../rpg_data/textures/left.png",
+    "down_left":"../rpg_data/textures/left.png",
+    "up_right":"../rpg_data/textures/right.png",
+    "down_right":"../rpg_data/textures/right.png"
+  }
+}

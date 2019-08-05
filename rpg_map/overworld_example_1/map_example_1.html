@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="../rpg_src/rpg_map.css">
+        <!--<link rel="icon" href="./rpg_data/icon.ico">-->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="robots" content="index, nofollow">
+        <meta name="revisit-after" content="30 days">
+        <!--<link rel="manifest" href="/manifest.json">-->
+        <title>map_example_1</title>
+    </head>
+    <body>
+        <div id="MapContent">
+        </div>
+        <div id="EntityContent">
+        </div>
+        <div id="CharacterContent">
+        </div>
+        <div id="MenuContent">
+        </div>
+    </body>
+
+    <script src="../../lib/jquery-3.4.1.js"></script>
+    <script src="../../lib/jquery.csv.js"></script>
+    <script src="../rpg_src/rpg_controls.js"></script>
+    <script src="../rpg_src/rpg_entities.js"></script>
+    <script src="../rpg_src/rpg_map.js"></script>
+    <script src="../rpg_src/rpg_dynamics.js"></script>
+    <script src="../rpg_src/rpg_utils.js"></script>
+    <script>
+      //These are the main properties that need to be defined in order to load the map.
+      //You can change map by either changing these variables, or by changing the url using javascript.
+      //The csv describing the current map and the location of all elements
+      var rpg_map_data_path = "./map_data/rpg_map_data.csv";
+      //The properties of the current map and its elements
+      var rpg_map_element_properties_path = "./map_data/rpg_map_element_properties.json";
+      //The character properties containing the texture refreneces for general activity
+      var rpg_character_properties_path = "./map_data/rpg_map_character_properties.json";
+      //The entity properties containting behavior rules, texture paths, entity placement, etc.
+      var rpg_entity_properties_path = "./map_data/rpg_map_entity_properties.json";
+      //Call to initialize and paint the world with all objects
+      initWorld();
+    </script>
+</html>
