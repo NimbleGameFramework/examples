@@ -23,10 +23,10 @@
 
     <script src="../../lib/jquery-3.4.1.js"></script>
     <script src="../../lib/jquery.csv.js"></script>
-    <script src="../rpg_src/rpg_controls.js"></script>
-    <script src="../rpg_src/rpg_entities.js"></script>
+    <script src="../rpg_src/rpg_character.js"></script>
+    <script src="../rpg_src/rpg_entity.js"></script>
     <script src="../rpg_src/rpg_map.js"></script>
-    <script src="../rpg_src/rpg_dynamics.js"></script>
+    <script src="../rpg_src/rpg_world.js"></script>
     <script src="../rpg_src/rpg_utils.js"></script>
     <script>
       //These are the main properties that need to be defined in order to load the map.
@@ -39,7 +39,8 @@
       var rpg_character_properties_path = "./map_data/rpg_map_character_properties.json";
       //The entity properties containting behavior rules, texture paths, entity placement, etc.
       var rpg_entity_properties_path = "./map_data/rpg_map_entity_properties.json";
-      //Call to initialize and paint the world with all objects
-      initWorld();
+      //Call to initialize and paint the world with all objects based on file paths
+      var world_example_1 = new World();
+      world_example_1.init();
     </script>
 </html>

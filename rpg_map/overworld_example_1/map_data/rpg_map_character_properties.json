@@ -1,8 +1,8 @@
 {
   "init":{
-    "mainCharacter_x":3,
-    "mainCharacter_y":3,
-    "mainCharacter_texture":"'down'"
+    "x_pos":3,
+    "y_pos":3,
+    "texture":"down"
   },
   "texture":{
     "up":"../rpg_data/textures/up.png",

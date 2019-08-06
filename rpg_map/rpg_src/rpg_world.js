@@ -1,34 +1,64 @@
 var World = function() {
-  var mainCharacter = Character();
-  var mainMap = Map();
+  //Determines the size of the world (map, character and entities) on screen in pixels per unit(size of a single tile or size of character)
+  var world = this;
+  this.scale = 100;
+
+  var mainCharacter = new Character(this);
+  var currentMap = new Map(this);
+  console.log("Creating world");
+
+  //allows other classes to inform the world that they have loaded
+  //When all elements are loaded they are drawn
+  var loading_assertion_array = [false, false];
+  this.load_assertion = function(){
+    for(let i = 0; i<loading_assertion_array.length; i++){
+      if(loading_assertion_array[i]==false){
+        loading_assertion_array[i] = true;
+        if(i==loading_assertion_array.length-1){
+          console.log("Drawing world")
+          world.draw();
+        }
+        return;
+      }
+    }
+  }
 
   //Initializes the world building the character layer, the map layer and the entity layer
-  function initWorld(scriptPath) {
-    initMap();
-    initCharacter();
-    //initEntities();
+  this.init = function() {
+    mainCharacter.init();
+    currentMap.init();
+    calculateDisplacement();
+
+    window.setInterval(function() {
+      mainCharacter.moveBasedOnKeys();
+      world.update();
+    }, 33);
   }
 
   //Draws everything in the game world based on current properties.
-  function drawWorld() {
+
+  this.draw = function() {
     calculateDisplacement();
-    drawCharacter();
-    drawMap();
+    mainCharacter.draw(world.scale);
+    currentMap.draw(world.scale);
   }
 
   //Moves elements to position based on current properties.
-  function updateWorld() {
+  this.update = function() {
     calculateDisplacement();
-    drawCharacter();
-    moveMap();
+    mainCharacter.update(world.scale);
+    currentMap.update(world.scale);
   }
 
   //Calculates character, map, and entity pixel displacement on screen.
   function calculateDisplacement() {
-    x_character_px_displacement = width / 2 - (world_scale / 2);
-    y_character_px_displacement = hight / 2 - (world_scale / 2);
-    x_map_px_displacement = x_character_px_displacement - (mainCharacter_x * world_scale);
-    y_map_px_displacement = y_character_px_displacement - (mainCharacter_y * world_scale);
+    x_character_px_displacement = width / 2 - (world.scale / 2);
+    y_character_px_displacement = hight / 2 - (world.scale / 2);
+    mainCharacter.setDisplacement(x_character_px_displacement, y_character_px_displacement);
+    let mainCharacter_current_pos = mainCharacter.getPos();
+    x_map_px_displacement = x_character_px_displacement - (mainCharacter_current_pos[0] * world.scale);
+    y_map_px_displacement = y_character_px_displacement - (mainCharacter_current_pos[1] * world.scale);
+    currentMap.setDisplacement(x_map_px_displacement, y_map_px_displacement);
   }
 
   //In rpg dynamics, all interactions, collisions, and overlaps, between the map, the character and the entities are processed
@@ -78,16 +108,10 @@ var World = function() {
     return collisionHappens;
   }
 
-  //Manages the movement seen on screen of the character or the entities.
-  //It is recommended to use only one interval to activate all movements
-  window.setInterval(function() {
-    moveCharacterBasedOnKeys();
-    updateMapEntitiesCharacter();
-  }, 33);
-
-
-  function message(messageString) {
-    stopCharacter();
-    alert(messageString);
-  }
+  //Redraws map to ensure alignment
+  document.getElementsByTagName("BODY")[0].onresize = function() {
+    width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    hight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+    world.update();
+  };
 }
