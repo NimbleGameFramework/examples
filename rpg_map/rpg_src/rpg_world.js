@@ -2,6 +2,7 @@ var World = function() {
   //Determines the size of the world (map, character and entities) on screen in pixels per unit(size of a single tile or size of character)
   var world = this;
   this.scale = 100;
+  this.time_per_frame = 33;
 
   var mainCharacter = new Character(this);
   var currentMap = new Map(this);
@@ -25,14 +26,14 @@ var World = function() {
 
   //Initializes the world building the character layer, the map layer and the entity layer
   this.init = function() {
+    console.log("Creating Character");
     mainCharacter.init();
     currentMap.init();
     calculateDisplacement();
-
     window.setInterval(function() {
       mainCharacter.moveBasedOnKeys();
       world.update();
-    }, 33);
+    }, world.time_per_frame);
   }
 
   //Draws everything in the game world based on current properties.

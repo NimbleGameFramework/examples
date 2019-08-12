@@ -1,32 +1,17 @@
-var Character = function(world_object) {
+//Character constructor function
+//Creates a character object
+function Character(world_object) {
+  Entity.call(this, world_object);
   var world = world_object;
-  var character = this;
-  var properties = {};
-  //Texture name of character when he is facing left, down, right, up
-  //Can be changed to other values for other expressions or actions manually, updates on draw() call
-  this.texture = "down";
+  var that = this;
 
   //Status of the menu
   var menu = 0;
 
-  //measured left to right the starting location of the main character on the x axis on current map
-  this.x_pos = 1;
-  //measured top to bottom the starting location of the main character on the y axis on current map
-  this.y_pos = 1;
-
-  //Determines where on screen the main character is painted based on the screen size and the world scale.
-  var x_px_displacement; //= (width / 2) - (scale / 2);
-  var y_px_displacement; //= (hight / 2) - (scale / 2);
-
   this.setDisplacement = function(x_displace_param, y_displace_param){
-    x_px_displacement = x_displace_param;
-    y_px_displacement = y_displace_param;
+    that.x_px_displacement = x_displace_param;
+    that.y_px_displacement = y_displace_param;
   }
-
-  this.getPos = function(){
-    return [character.x_pos,character.y_pos];
-  }
-
 
   //Determines if a arrow key is currently pressed
   var toggle_key_up = false;
@@ -34,60 +19,52 @@ var Character = function(world_object) {
   var toggle_key_down = false;
   var toggle_key_left = false;
 
-  //Determines how far the entity moves should be 1 divided by a multiple of 2
-  //1, 0.5, 0.25, 0.125, etc
-  var movement_unit = 0.125;
-
   //Initializes the character and all its properties
   this.init = function() {
+    that.id = "main_character";
     getCharacterProperties(rpg_character_properties_path);
   }
 
   //Gets the character properties file
   function getCharacterProperties(character_url) {
-    return $.ajax({
+    $.ajax({
       type: "GET",
       url: character_url,
       dataType: "json",
       success: function(data) {
-        processCharacter(data);
+        console.log(data);
+        processCharacterProperties(data);
       }
     });
   };
 
   //Processes the character properties file
   //All properties defined in the in the init object are overwritten
-  function processCharacter(data) {
-    properties = data;
-    console.log(properties);
-    character = $.extend(character, properties["init"]);
-    console.log(character.texture);
+  function processCharacterProperties(data) {
+    that.properties = data;
+    console.log(that.properties);
+    //Defines initial variable values
+    that = $.extend(that, that.properties["init"]);
+    //Preloads character animation images outside of window
+    let all_textures_listed = that.properties["texture"];
+    let textures_keys = Object.keys(all_textures_listed);
+    for(let i = 0; i<textures_keys.length;i++){
+      let animation_frames = that.properties["texture"][textures_keys[i]];
+      for(let j = 0;j<animation_frames.length;j++){
+        let current_frame = animation_frames[j];
+        Image2 = new Image(150,150);
+        Image2.src = current_frame;
+      }
+    }
     world.load_assertion();
   }
 
   //Draws the character based on the current character status.
   this.draw = function(scale) {
-    let characterTexturePath = properties["texture"][character.texture];
-    x_character_img_px_displacement = x_character_px_displacement;
-    y_character_img_px_displacement = y_character_px_displacement;
-    let character_layer_inyection = "<img id='main_character' class='character_element' style='width:" + scale + "px;top:" +
-      y_character_img_px_displacement + "px;left:" + x_character_img_px_displacement + "px' src='" + characterTexturePath + "'>";
+    let characterTexturePath = that.defineAnimationFrame();
+    let character_layer_inyection = "<img id='"+that.id+"' class='character_element' style='width:" + scale + "px;top:" +
+      that.y_px_displacement + "px;left:" + that.x_px_displacement + "px' src='" + characterTexturePath + "'>";
     document.getElementById("CharacterContent").innerHTML = character_layer_inyection;
-  }
-
-  //Updates the character based on the current character status.
-  this.update = function(scale) {
-
-    let characterTexturePath = properties["texture"][character.texture];
-    x_character_img_px_displacement = x_character_px_displacement;
-    y_character_img_px_displacement = y_character_px_displacement;
-    let main_character_element = $("#main_character");
-    main_character_element.css({
-      "width":scale+"px",
-      "top":y_character_img_px_displacement+"px",
-      "left":x_character_img_px_displacement+"px"
-    });
-    main_character_element.attr("src", characterTexturePath);
   }
 
   //Computer controls
@@ -157,31 +134,43 @@ var Character = function(world_object) {
     let y_total = (-1 * toggle_key_up) + toggle_key_down;
     let x_total = (-1 * toggle_key_left) + toggle_key_right;
     if (y_total == -1 && x_total == 0) {
-      character.texture = "up";
+      that.texture = "up";
+      that.advanceAnimationTime();
     } else if (y_total == 1 && x_total == 0) {
-      character.texture = "down";
+      that.texture = "down";
+      that.advanceAnimationTime();
     } else if (y_total == 0 && x_total == 1) {
-      character.texture = "right";
+      that.texture = "right";
+      that.advanceAnimationTime();
     } else if (y_total == 0 && x_total == -1) {
-      character.texture = "left";
+      that.texture = "left";
+      that.advanceAnimationTime();
     } else if (y_total == 1 && x_total == 1) {
-      character.texture = "down_right";
+      that.texture = "down_right";
+      that.advanceAnimationTime();
     } else if (y_total == -1 && x_total == -1) {
-      character.texture = "up_left";
+      that.texture = "up_left";
+      that.advanceAnimationTime();
     } else if (y_total == -1 && x_total == 1) {
-      character.texture = "up_right";
+      that.texture = "up_right";
+      that.advanceAnimationTime();
     } else if (y_total == 1 && x_total == -1) {
-      character.texture = "down_left";
+      that.texture = "down_left";
+      that.advanceAnimationTime();
+    } else {
+      if(that.texture=="down_left"||that.texture=="up_left"||that.texture=="up_left"||that.texture=="down_right"||that.texture=="up"||that.texture=="right"||that.texture=="down"||that.texture=="left"){
+        that.animation_time = 0;
+      }
     }
-    moveCharacter([character.x_pos, character.y_pos], [character.x_pos, character.y_pos + (y_total * movement_unit)]);
-    moveCharacter([character.x_pos, character.y_pos], [character.x_pos + (x_total * movement_unit), character.y_pos]);
+    moveCharacter([that.x_pos, that.y_pos], [that.x_pos, that.y_pos + (y_total * that.movement_unit)]);
+    moveCharacter([that.x_pos, that.y_pos], [that.x_pos + (x_total * that.movement_unit), that.y_pos]);
   }
 
   //Movement action of a character on Arrow key down
   function moveCharacter(origin, destination) {
     let rounded_destination = [Math.round(destination[0]), Math.round(destination[1])]
-    character.x_pos = destination[0];
-    character.y_pos = destination[1];
+    that.x_pos = destination[0];
+    that.y_pos = destination[1];
   }
 
   //Cancels all currently pressed arrow keys
@@ -226,19 +215,19 @@ var Character = function(world_object) {
     if (Math.abs(xDiff) > Math.abs(yDiff)) {
       /*most significant*/
       if (xDiff > 0) {
-        character.texture = "left";
-        moveCharacter([character.x_pos, character.y_pos], [character.x_pos - 1, character.y_pos]);
+        that.texture = "left";
+        moveCharacter([that.x_pos, that.y_pos], [that.x_pos - 1, that.y_pos]);
       } else {
-        character.texture = "right";
-        moveCharacter([character.x_pos, character.y_pos], [character.x_pos + 1, character.y_pos]);
+        that.texture = "right";
+        moveCharacter([that.x_pos, that.y_pos], [that.x_pos + 1, that.y_pos]);
       }
     } else {
       if (yDiff > 0) {
-        character.texture = "up";
-        moveCharacter([character.x_pos, character.y_pos], [character.x_pos, character.y_pos - 1]);
+        that.texture = "up";
+        moveCharacter([that.x_pos, that.y_pos], [that.x_pos, that.y_pos - 1]);
       } else {
-        character.texture = "down";
-        moveCharacter([character.x_pos, character.y_pos], [character.x_pos, character.y_pos + 1]);
+        that.texture = "down";
+        moveCharacter([that.x_pos, that.y_pos], [that.x_pos, that.y_pos + 1]);
       }
     }
     /* reset values */
