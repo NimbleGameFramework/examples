@@ -130,6 +130,7 @@ function Character(world_object) {
     }
   }
 
+  //Based on pressed keys calculates the movement of the main character sets his direction and advances the time of animation
   this.moveBasedOnKeys = function() {
     let y_total = (-1 * toggle_key_up) + toggle_key_down;
     let x_total = (-1 * toggle_key_left) + toggle_key_right;

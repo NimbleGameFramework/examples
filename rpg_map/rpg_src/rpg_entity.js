@@ -83,6 +83,8 @@ function Entity(world_object) {
     that.animation_time = that.animation_time + world.time_per_frame;
   }
 
+  //Based on the current time, the amount of frames in a animation, the total duration of a animation
+  //Returns the Current frame that should be painted
   this.defineAnimationFrame = function(){
     let current_animation_group = that.properties["texture"][that.texture];
     let time_per_animation_frame = (that.animation_cycle/current_animation_group.length);
