@@ -1,9 +1,14 @@
-{
+var init_rpg_character_properties = {
   "init":{
     "x_pos":3,
     "y_pos":3,
     "texture":"down",
-    "animation_cycle":1500
+    "animation_cycle":1500,
+    "x_hitbox_start":0.14,
+    "y_hitbox_start":0.22,
+    "x_hitbox_end":0.86,
+    "y_hitbox_end":0.78,
+    "nature":simple_solid_nature
   },
   "texture":{
     "up":[

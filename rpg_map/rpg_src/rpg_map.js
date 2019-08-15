@@ -1,9 +1,10 @@
 var Map = function(world_object_param) {
+  var that = this;
   var world_object = world_object_param;
 
   //Initial loading of map
-  var layout_data = undefined;
-  var element_properties = undefined;
+  this.layout_data = undefined;
+  this.properties = undefined;
 
   //Determines the displacement of the map based on the location of the mainCharacter and the world scale
   var x_px_displacement = 0;
@@ -31,24 +32,13 @@ var Map = function(world_object_param) {
   };
 
   function processMap(data) {
-    layout_data = $.csv.toArrays(data);
-    getMapProperties(rpg_map_element_properties_path);
-  };
-
-  function getMapProperties(rpg_map_element_properties_url) {
-    return $.ajax({
-      type: "GET",
-      url: rpg_map_element_properties_url,
-      dataType: "json",
-      success: function(data) {
-        processProperties(data);
-      }
-    });
+    that.layout_data = $.csv.toArrays(data);
+    processProperties(init_rpg_map_properties);
   };
 
   function processProperties(data) {
     console.log(data);
-    element_properties = data;
+    that.properties = data;
     world_object.load_assertion();
   };
 
@@ -57,14 +47,14 @@ var Map = function(world_object_param) {
   this.draw = function(scale) {
     let map_layer_inyection = "";
     let y_added_displacement = 0;
-    for (let i = 0; i < layout_data.length; i++) {
-      let current_row = layout_data[i];
+    for (let i = 0; i < that.layout_data.length; i++) {
+      let current_row = that.layout_data[i];
       y_total_row_displacement = y_px_displacement + y_added_displacement;
       y_added_displacement = y_added_displacement + scale;
       map_layer_inyection = map_layer_inyection + "<div id='map_row_" + i + "' class='map_row' style='height:" + scale + "px;left:" + x_px_displacement + "px;top:" + y_total_row_displacement + "px;'>";
       for (let j = 0; j < current_row.length; j++) {
         let current_square = current_row[j];
-        let current_texture = element_properties[current_square]["texture"];
+        let current_texture = that.properties[current_square]["texture"];
         map_layer_inyection = map_layer_inyection + "<img id='map_img_" + i + "_" + j + "' class='map_element' src='" + current_texture + "' style='width:" + scale + "px;'>";
       }
       map_layer_inyection = map_layer_inyection + "</div>";
@@ -75,8 +65,8 @@ var Map = function(world_object_param) {
   //This function changes the style of each individual map row and map image instead of redrawing it, this makes movement smoother
   this.update = function(scale) {
     let y_added_displacement = 0;
-    for (let i = 0; i < layout_data.length; i++) {
-      let current_row = layout_data[i];
+    for (let i = 0; i < that.layout_data.length; i++) {
+      let current_row = that.layout_data[i];
       y_total_row_displacement = y_px_displacement + y_added_displacement;
       y_added_displacement = y_added_displacement + scale;
       $("#map_row_" + i).css({
@@ -86,15 +76,11 @@ var Map = function(world_object_param) {
       });
       for (let j = 0; j < current_row.length; j++) {
         let current_square = current_row[j];
-        let current_texture = element_properties[current_square]["texture"];
+        let current_texture = that.properties[current_square]["texture"];
         $("#map_img_" + i + "_" + j).css({
           "width": scale + "px"
         });
       }
     }
-  }
-
-  function checkElementCollision() {
-    return 0;
   }
 }

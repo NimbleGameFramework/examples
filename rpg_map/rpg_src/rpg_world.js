@@ -4,8 +4,9 @@ var World = function() {
   this.scale = 100;
   this.time_per_frame = 33;
 
-  var mainCharacter = new Character(this);
-  var currentMap = new Map(this);
+  this.mainCharacter = new Character(this);
+  this.currentMap = new Map(this);
+  this.entities = [];
   console.log("Creating world");
 
   //allows other classes to inform the world that they have loaded
@@ -13,6 +14,7 @@ var World = function() {
   var loading_assertion_array = [false, false];
   this.load_assertion = function(){
     for(let i = 0; i<loading_assertion_array.length; i++){
+
       if(loading_assertion_array[i]==false){
         loading_assertion_array[i] = true;
         if(i==loading_assertion_array.length-1){
@@ -26,87 +28,205 @@ var World = function() {
 
   //Initializes the world building the character layer, the map layer and the entity layer
   this.init = function() {
-    console.log("Creating Character");
-    mainCharacter.init();
-    currentMap.init();
+    console.log("Initializing character");
+    world.mainCharacter.init();
+    console.log("Initializing map");
+    world.currentMap.init();
+    console.log("Initializing entities");
+    this.init_entities();
     calculateDisplacement();
+    console.log("Initializing world clock");
     window.setInterval(function() {
-      mainCharacter.moveBasedOnKeys();
+      checkAllCollisions();
+      movePositions();
       world.update();
     }, world.time_per_frame);
   }
 
-  //Draws everything in the game world based on current properties.
+  this.init_entities = function(){
+    for(let i = 0; i<init_rpg_entity_properties.length; i++){
+      let current_entity_type = init_rpg_entity_properties[i];
+      for(let j = 0; j<current_entity_type.init.length;j++){
+        let entity_properties = {};
+        let new_entity = new Entity(world);
+        entity_properties.init = current_entity_type.init[j];
+        entity_properties.texture = current_entity_type.texture;
+        new_entity.init(entity_properties);
+        new_entity.id = "entity_"+i+"_"+j;
+        world.entities.push(new_entity);
+      }
+    }
+    world.draw_entities();
+  }
 
+  this.draw_entities = function(){
+    for(let i = 0; i<world.entities.length;i++){
+      world.entities[i].draw(world.scale);
+    }
+  }
+
+  this.update_entities = function(){
+    for(let i = 0; i<world.entities.length;i++){
+      world.entities[i].update(world.scale);
+    }
+  }
+
+
+  //Draws everything in the game world based on current properties
   this.draw = function() {
     calculateDisplacement();
-    mainCharacter.draw(world.scale);
-    currentMap.draw(world.scale);
+    world.mainCharacter.draw(world.scale);
+    world.currentMap.draw(world.scale);
   }
 
   //Moves elements to position based on current properties.
   this.update = function() {
     calculateDisplacement();
-    mainCharacter.update(world.scale);
-    currentMap.update(world.scale);
+    world.mainCharacter.update(world.scale);
+    world.currentMap.update(world.scale);
+    world.update_entities();
   }
+
+
 
   //Calculates character, map, and entity pixel displacement on screen.
   function calculateDisplacement() {
     x_character_px_displacement = width / 2 - (world.scale / 2);
     y_character_px_displacement = hight / 2 - (world.scale / 2);
-    mainCharacter.setDisplacement(x_character_px_displacement, y_character_px_displacement);
-    let mainCharacter_current_pos = mainCharacter.getPos();
+    world.mainCharacter.setDisplacement(x_character_px_displacement, y_character_px_displacement);
+    let mainCharacter_current_pos = world.mainCharacter.getPos();
     x_map_px_displacement = x_character_px_displacement - (mainCharacter_current_pos[0] * world.scale);
     y_map_px_displacement = y_character_px_displacement - (mainCharacter_current_pos[1] * world.scale);
-    currentMap.setDisplacement(x_map_px_displacement, y_map_px_displacement);
+    world.currentMap.setDisplacement(x_map_px_displacement, y_map_px_displacement);
+    for(let i = 0; i<world.entities.length;i++){
+      let current_entity = world.entities[i];
+      current_entity.setDisplacement(x_map_px_displacement+(current_entity.x_pos*world.scale),y_map_px_displacement+current_entity.y_pos*world.scale);
+    }
   }
 
-  //In rpg dynamics, all interactions, collisions, and overlaps, between the map, the character and the entities are processed
+  function checkAllCollisions(){
+    world.checkCollisions(world.mainCharacter, world.mainCharacter.predictMovement());
+  }
 
-  //Collision detection determines if the character or an entity will be able to move in a certain direction.
-  //If the map element or the entity in the block to move to has a "solid" collision nature, the algorithm will return true and the character or entity will not be able to move.
-  //The character is not solid, meaning that entities can overlap its space if they themselves are not solid.
-  //If other nature properties are found these are called as javascript functions including the origin and destination information
-  function checkSpaceCollision(origin, destination, entity_nature) {
-    let collisionHappens = false;
+  //Analyzes predicted character and entity movements and provides collision information to each to indicate how they can move.
+  //When collision is detected the collision nature of the character, the entity, and the map elements that collided are activated.
+  this.checkCollisions = function(entity_param, from_to) {
+    for(let i = 0;i<world.entities.length;i++){
+      let current_entity = world.entities[i];
+      checkEntityCollision(current_entity,entity_param, from_to)
+    }
+    for(let i=0;i<world.currentMap.layout_data.length;i++){
+      let current_map_row = world.currentMap.layout_data[i];
+      for(let j=0;j<current_map_row.length;j++){
+        current_map_element = current_map_row[j];
 
-    let element_destination = map_array[destination[1]][destination[0]];
-    let element_collision_nature = rpg_map_properties[element_destination]["nature"]["collision"];
+        checkEntityMapCollision(current_map_element,j,i,entity_param,from_to);
+      }
+    }
+  }
 
-    //Checks if map element has solid attribute
-    //Executes all other natures as functions, give priority to given JSON parameters
-    for (let i = 0; i < element_collision_nature.length; i++) {
-      if (element_collision_nature[i] == "solid") {
-        collisionHappens = true;
-      } else {
-        let param_string = "(";
-        let natureFunction = "";
-        if (typeof element_collision_nature[i] == 'object') {
-          natureFunction = Object.keys(element_collision_nature[i])[0];
-          console.log(element_collision_nature[i][natureFunction]);
-          param_string = param_string + element_collision_nature[i][natureFunction] + ",";
-        } else {
-          natureFunction = element_collision_nature[i]
+//Checks if 2 entities collide, if true takes appropriate action
+//entityCollider is the entity in movment, entity is the other element.
+  function checkEntityCollision(entity, entityCollider, movementPath){
+    let entity_hitbox = entity.getHitbox();
+    let entityCollider_hitbox = entityCollider.getHitbox();
+    let x_total = movementPath[1][0]-movementPath[0][0];
+    let y_total = movementPath[1][1]-movementPath[0][1];
+    let entityCollider_future_hitbox_x = [entityCollider_hitbox[0]+x_total, entityCollider_hitbox[1], entityCollider_hitbox[2]+x_total, entityCollider_hitbox[3]];
+    let entityCollider_future_hitbox_y = [entityCollider_hitbox[0], entityCollider_hitbox[1]+y_total, entityCollider_hitbox[2], entityCollider_hitbox[3]+y_total];
+    if(hitboxCollision(entity_hitbox, entityCollider_future_hitbox_y)){
+      if(y_total>0){
+        if(!entity.nature.collision(entityCollider, entity)){
+          entityCollider.collisionDown = true;
         }
-        param_string = param_string + "[" + origin + "],[" + destination + "])";
-        console.log(natureFunction + param_string);
-        eval(natureFunction + param_string + ";");
+        if(!entityCollider.nature.collision(entity, entityCollider)){
+          entity.collisionUp = true;
+        }
+      }
+      else if(y_total<0){
+        if(!entity.nature.collision(entityCollider, entity)){
+          entityCollider.collisionUp = true;
+        }
+        if(!entityCollider.nature.collision(entity, entityCollider)){
+          entity.collisionDown = true;
+        }
+      }
+    }
+    if(hitboxCollision(entity_hitbox, entityCollider_future_hitbox_x)){
+      if(x_total>0){
+        if(!entity.nature.collision(entityCollider, entity)){
+          entityCollider.collisionRight = true;
+        }
+        if(!entityCollider.nature.collision(entity, entityCollider)){
+          entity.collisionLeft = true;
+        }
+      }
+      else if(x_total<0){
+        if(!entity.nature.collision(entityCollider, entity)){
+          entityCollider.collisionLeft = true;
+        }
+        if(!entityCollider.nature.collision(entity, entityCollider)){
+          entity.collisionRight = true;
+        }
+      }
+    }
+  }
+
+  //Checks if 2 entities collide, if true takes appropriate action
+  //entityCollider is the entity in movment, entity is the other element.
+    function checkEntityMapCollision(map_element, map_element_x_pos, map_element_y_pos, entityCollider, movementPath){
+      let element_hitbox = [map_element_x_pos, map_element_y_pos, map_element_x_pos+1, map_element_y_pos+1];
+      let element_prop = world.currentMap.properties[map_element];
+      let entityCollider_hitbox = entityCollider.getHitbox();
+      let x_total = movementPath[1][0]-movementPath[0][0];
+      let y_total = movementPath[1][1]-movementPath[0][1];
+      let entityCollider_future_hitbox_x = [entityCollider_hitbox[0]+x_total, entityCollider_hitbox[1], entityCollider_hitbox[2]+x_total, entityCollider_hitbox[3]];
+      let entityCollider_future_hitbox_y = [entityCollider_hitbox[0], entityCollider_hitbox[1]+y_total, entityCollider_hitbox[2], entityCollider_hitbox[3]+y_total];
+      if(hitboxCollision(element_hitbox, entityCollider_future_hitbox_y)){
+        if(y_total>0){
+          if(!element_prop.nature.collision(entityCollider, undefined)){
+            entityCollider.collisionDown = true;
+          }
+          entityCollider.nature.collision(undefined, entityCollider)
+        }
+        else if(y_total<0){
+          if(!element_prop.nature.collision(entityCollider, undefined)){
+            entityCollider.collisionUp = true;
+          }
+          entityCollider.nature.collision(undefined, entityCollider)
+        }
+      }
+      if(hitboxCollision(element_hitbox, entityCollider_future_hitbox_x)){
+        if(x_total>0){
+
+          if(!element_prop.nature.collision(entityCollider, undefined)){
+            entityCollider.collisionRight = true;
+          }
+          entityCollider.nature.collision(undefined, entityCollider)
+        }
+        else if(x_total<0){
+          if(!element_prop.nature.collision(entityCollider, undefined)){
+            entityCollider.collisionLeft = true;
+          }
+          entityCollider.nature.collision(undefined, entityCollider)
+        }
       }
     }
 
-    if (entity_nature != null) {
-      let arrayContainsSolid = (myarr.indexOf("solid") > -1);
-      if (entity_nature == "solid") {
-        if (destination[0] == mainCharacter_x && destination[1] == mainCharacter_y) {
-          collisionHappens = true;
-        }
-      }
+  function hitboxCollision(hitbox1, hitbox2){
+    if(hitbox1[0]<hitbox2[2] && hitbox1[2]>hitbox2[0] && hitbox1[1]<hitbox2[3] && hitbox1[3]>hitbox2[1]){
+      return true;
     }
 
-    //TODO
-    //Entity collision detection
-    return collisionHappens;
+    return false;
+  }
+
+  //Tells all entities to move to new position based on collision status. Resets collisions of each entity.
+  function movePositions(){
+    world.mainCharacter.movePosition();
+    for(let i = 0;i<world.entities.length;i++){
+      world.entities[i].movePosition();
+    }
   }
 
   //Redraws map to ensure alignment

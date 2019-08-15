@@ -3,6 +3,8 @@
 function Entity(world_object) {
   var world = world_object;
   var that = this;
+  this.nature = undefined;
+  this.isCharacter = false;
   this.properties = {};
   //Texture name of entity when he is facing left, down, right, up
   //Can be changed to other values for other expressions or actions manually, updates on draw() call
@@ -32,9 +34,14 @@ function Entity(world_object) {
   this.x_hitbox_end = 1;
   this.y_hitbox_end = 1;
 
+  //Returns the coordinates of this entities hitbox
+  this.getHitbox = function(){
+    return [this.x_pos+that.x_hitbox_start, this.y_pos+that.y_hitbox_start, this.x_pos+that.x_hitbox_end, this.y_pos+that.y_hitbox_end];
+  }
+
   this.setDisplacement = function(x_displace_param, y_displace_param){
-    x_px_displacement = x_displace_param;
-    y_px_displacement = y_displace_param;
+    that.x_px_displacement = x_displace_param;
+    that.y_px_displacement = y_displace_param;
   }
 
   this.getPos = function(){
@@ -53,18 +60,29 @@ function Entity(world_object) {
   //Processes the entity properties file
   //All properties defined in the in the init object are overwritten
   function processEntityProperties(data) {
+    console.log(data);
     that.properties = data;
-    console.log(that.properties);
-    entity = $.extend(entity, that.properties["init"]);
-    console.log(that.texture);
+    //Defines initial variable values
+    that = $.extend(that, that.properties["init"]);
+    //Preloads character animation images outside of window
+    let all_textures_listed = that.properties["texture"];
+    let textures_keys = Object.keys(all_textures_listed);
+    for(let i = 0; i<textures_keys.length;i++){
+      let animation_frames = that.properties["texture"][textures_keys[i]];
+      for(let j = 0;j<animation_frames.length;j++){
+        let current_frame = animation_frames[j];
+        Image2 = new Image(150,150);
+        Image2.src = current_frame;
+      }
+    }
   }
 
   //Draws the entity based on the current entity status.
   this.draw = function(scale) {
-    let entityTexturePath = that.properties["texture"][that.texture];
+    let entityTexturePath = that.defineAnimationFrame();
     let entity_layer_inyection = "<img id='"+that.id+"' class='entity_element' style='width:" + scale + "px;top:" +
       that.y_px_displacement + "px;left:" + that.x_px_displacement + "px' src='" + entityTexturePath + "'>";
-    document.getElementById("entityContent").innerHTML = entity_layer_inyection;
+    document.getElementById("EntityContent").innerHTML = document.getElementById("EntityContent").innerHTML+entity_layer_inyection;
   }
 
   //Updates the entity based on the current entity status.
@@ -94,10 +112,51 @@ function Entity(world_object) {
     }
     for(var i = 0; i<current_animation_group.length;i++){
       if(that.animation_time>=(i*time_per_animation_frame)&&that.animation_time<=((i+1)*time_per_animation_frame)){
+
         return current_animation_group[i];
       }
     }
     return "error";
+  }
+
+  //Determines if this entity is colliding in a certain direction. if true, cant move in said direction
+  this.collisionUp = false;
+  this.collisionDown = false;
+  this.collisionLeft = false;
+  this.collisionRight = false;
+
+  //Predicts the apropriate movement based on the entity nature
+  //Returns the origin and the destination of the entity
+  this.predictMovement = function(){
+    return that.nature.movement(this);
+  }
+
+  //Moves the entity based on its nature and the current collision directions.
+  //If colliding in a direction, does not move.
+  this.movePosition = function(){
+    that.advanceAnimationTime();
+    let from_to = that.nature.movement(this);
+    let destination = from_to[1];
+    if(from_to[0][0]<from_to[1][0]&&!that.collisionRight){
+      that.x_pos = destination[0];
+    }
+    if(from_to[0][0]>from_to[1][0]&&!that.collisionLeft){
+      that.x_pos = destination[0];
+    }
+    if(from_to[0][1]<from_to[1][1]&&!that.collisionDown){
+      that.y_pos = destination[1];
+    }
+    if(from_to[0][1]>from_to[1][1]&&!that.collisionUp){
+      that.y_pos = destination[1];
+    }
+    resetCollision();
+  }
+
+  function resetCollision(){
+    that.collisionUp = false;
+    that.collisionDown = false;
+    that.collisionLeft = false;
+    that.collisionRight = false;
   }
 
 }

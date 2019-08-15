@@ -23,6 +23,13 @@ body{
   overflow: hidden;
 }
 
+.entity_element{
+  position: absolute;
+  padding:0;
+  margin:0;
+  overflow: hidden;
+}
+
 #MapContent{
   z-index: 0;
 }
