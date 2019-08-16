@@ -128,14 +128,14 @@ function Entity(world_object) {
   //Predicts the apropriate movement based on the entity nature
   //Returns the origin and the destination of the entity
   this.predictMovement = function(){
-    return that.nature.movement(this);
+    return that.nature.movement(world,this);
   }
 
   //Moves the entity based on its nature and the current collision directions.
   //If colliding in a direction, does not move.
   this.movePosition = function(){
     that.advanceAnimationTime();
-    let from_to = that.nature.movement(this);
+    let from_to = that.nature.movement(world,this);
     let destination = from_to[1];
     if(from_to[0][0]<from_to[1][0]&&!that.collisionRight){
       that.x_pos = destination[0];
@@ -150,6 +150,11 @@ function Entity(world_object) {
       that.y_pos = destination[1];
     }
     resetCollision();
+  }
+
+  this.setPosition = function(x_pos_param,y_pos_param){
+    that.x_pos = x_pos_param;
+    that.y_pos = y_pos_param;
   }
 
   function resetCollision(){

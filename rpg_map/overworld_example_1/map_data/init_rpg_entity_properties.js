@@ -1,8 +1,8 @@
 var init_rpg_entity_properties = [{
     "init": [{
-      "x_pos": 20,
-      "y_pos": 2,
-      "nature": new Nature(world_example_1, collisionLibrary.solid, undefined, undefined, movementLibrary.still)
+      "x_pos": 9,
+      "y_pos": 9,
+      "nature": new Nature( collisionLibrary.pushable, undefined, undefined, movementLibrary.still)
     }],
     "texture": {
       "up": ["../rpg_data/textures/entity/box.png"],
@@ -22,13 +22,13 @@ var init_rpg_entity_properties = [{
       "y_pos": 5,
       "texture": "down",
       "animation_cycle": 1000,
-      "nature": new Nature(world_example_1, collisionLibrary.solid, undefined, undefined, movementLibrary.still)
+      "nature": new Nature( collisionLibrary.solid, undefined, undefined, movementLibrary.bounceOnCollide)
     }, {
       "x_pos": 8,
       "y_pos": 8,
-      "texture": "down",
+      "texture": "left",
       "animation_cycle": 1000,
-      "nature": new Nature(world_example_1, collisionLibrary.solid, undefined, undefined, movementLibrary.still)
+      "nature": new Nature( collisionLibrary.solid, undefined, undefined, movementLibrary.bounceOnCollide)
     }],
     "texture": {
       "up": [

@@ -9,6 +9,16 @@ var World = function() {
   this.entities = [];
   console.log("Creating world");
 
+  //Initializes the world building the character layer, the map layer and the entity layer
+  this.init = function() {
+    console.log("Initializing character");
+    world.mainCharacter.init();
+    console.log("Initializing map");
+    world.currentMap.init();
+    console.log("Initializing entities");
+    this.init_entities();
+  }
+
   //allows other classes to inform the world that they have loaded
   //When all elements are loaded they are drawn
   var loading_assertion_array = [false, false];
@@ -20,27 +30,17 @@ var World = function() {
         if(i==loading_assertion_array.length-1){
           console.log("Drawing world")
           world.draw();
+          calculateDisplacement();
+          console.log("Initializing world clock");
+          window.setInterval(function() {
+            checkAllCollisions();
+            movePositions();
+            world.update();
+          }, world.time_per_frame);
         }
         return;
       }
     }
-  }
-
-  //Initializes the world building the character layer, the map layer and the entity layer
-  this.init = function() {
-    console.log("Initializing character");
-    world.mainCharacter.init();
-    console.log("Initializing map");
-    world.currentMap.init();
-    console.log("Initializing entities");
-    this.init_entities();
-    calculateDisplacement();
-    console.log("Initializing world clock");
-    window.setInterval(function() {
-      checkAllCollisions();
-      movePositions();
-      world.update();
-    }, world.time_per_frame);
   }
 
   this.init_entities = function(){
@@ -104,122 +104,132 @@ var World = function() {
     }
   }
 
+  //Checks collisions for each entity and the main character with the rest of the world
   function checkAllCollisions(){
     world.checkCollisions(world.mainCharacter, world.mainCharacter.predictMovement());
+    for(var i = 0; i<world.entities.length;i++){
+      world.checkCollisions(world.entities[i], world.entities[i].predictMovement());
+    }
   }
 
-  //Analyzes predicted character and entity movements and provides collision information to each to indicate how they can move.
+  //Based on an entities expected path(from_to) detects collisions with the rest of the world
   //When collision is detected the collision nature of the character, the entity, and the map elements that collided are activated.
+  //Returns true if collision detected, false otherwise
   this.checkCollisions = function(entity_param, from_to) {
+    var resp = true;
+    resp = resp && checkEntityCollision(world.mainCharacter,entity_param, from_to);
     for(let i = 0;i<world.entities.length;i++){
       let current_entity = world.entities[i];
-      checkEntityCollision(current_entity,entity_param, from_to)
+      resp = resp && checkEntityCollision(current_entity,entity_param, from_to);
+
     }
     for(let i=0;i<world.currentMap.layout_data.length;i++){
       let current_map_row = world.currentMap.layout_data[i];
       for(let j=0;j<current_map_row.length;j++){
         current_map_element = current_map_row[j];
-
-        checkEntityMapCollision(current_map_element,j,i,entity_param,from_to);
+        resp = resp && checkEntityMapCollision(current_map_element,j,i,entity_param,from_to);
       }
     }
+    return resp;
   }
 
 //Checks if 2 entities collide, if true takes appropriate action
 //entityCollider is the entity in movment, entity is the other element.
   function checkEntityCollision(entity, entityCollider, movementPath){
+    if(entity.id==entityCollider.id){
+      return true;
+    }
+
     let entity_hitbox = entity.getHitbox();
     let entityCollider_hitbox = entityCollider.getHitbox();
     let x_total = movementPath[1][0]-movementPath[0][0];
     let y_total = movementPath[1][1]-movementPath[0][1];
     let entityCollider_future_hitbox_x = [entityCollider_hitbox[0]+x_total, entityCollider_hitbox[1], entityCollider_hitbox[2]+x_total, entityCollider_hitbox[3]];
     let entityCollider_future_hitbox_y = [entityCollider_hitbox[0], entityCollider_hitbox[1]+y_total, entityCollider_hitbox[2], entityCollider_hitbox[3]+y_total];
+    var y_collision = true;
     if(hitboxCollision(entity_hitbox, entityCollider_future_hitbox_y)){
       if(y_total>0){
-        if(!entity.nature.collision(entityCollider, entity)){
+        y_collision =entity.nature.collision(world,entityCollider, entity, 1)
+        if(!y_collision){
           entityCollider.collisionDown = true;
-        }
-        if(!entityCollider.nature.collision(entity, entityCollider)){
-          entity.collisionUp = true;
         }
       }
       else if(y_total<0){
-        if(!entity.nature.collision(entityCollider, entity)){
+        y_collision =entity.nature.collision(world,entityCollider, entity,3)
+        if(!y_collision){
           entityCollider.collisionUp = true;
-        }
-        if(!entityCollider.nature.collision(entity, entityCollider)){
-          entity.collisionDown = true;
         }
       }
     }
+    var x_collision = true;
     if(hitboxCollision(entity_hitbox, entityCollider_future_hitbox_x)){
       if(x_total>0){
-        if(!entity.nature.collision(entityCollider, entity)){
+        x_collision = entity.nature.collision(world, entityCollider, entity,4);
+        if(!x_collision){
           entityCollider.collisionRight = true;
-        }
-        if(!entityCollider.nature.collision(entity, entityCollider)){
-          entity.collisionLeft = true;
         }
       }
       else if(x_total<0){
-        if(!entity.nature.collision(entityCollider, entity)){
+        x_collision = entity.nature.collision(world,entityCollider, entity,2);
+        if(!x_collision){
           entityCollider.collisionLeft = true;
-        }
-        if(!entityCollider.nature.collision(entity, entityCollider)){
-          entity.collisionRight = true;
         }
       }
     }
+    return y_collision && x_collision;
   }
 
   //Checks if 2 entities collide, if true takes appropriate action
   //entityCollider is the entity in movment, entity is the other element.
-    function checkEntityMapCollision(map_element, map_element_x_pos, map_element_y_pos, entityCollider, movementPath){
-      let element_hitbox = [map_element_x_pos, map_element_y_pos, map_element_x_pos+1, map_element_y_pos+1];
-      let element_prop = world.currentMap.properties[map_element];
-      let entityCollider_hitbox = entityCollider.getHitbox();
-      let x_total = movementPath[1][0]-movementPath[0][0];
-      let y_total = movementPath[1][1]-movementPath[0][1];
-      let entityCollider_future_hitbox_x = [entityCollider_hitbox[0]+x_total, entityCollider_hitbox[1], entityCollider_hitbox[2]+x_total, entityCollider_hitbox[3]];
-      let entityCollider_future_hitbox_y = [entityCollider_hitbox[0], entityCollider_hitbox[1]+y_total, entityCollider_hitbox[2], entityCollider_hitbox[3]+y_total];
-      if(hitboxCollision(element_hitbox, entityCollider_future_hitbox_y)){
-        if(y_total>0){
-          if(!element_prop.nature.collision(entityCollider, undefined)){
-            entityCollider.collisionDown = true;
-          }
-          entityCollider.nature.collision(undefined, entityCollider)
-        }
-        else if(y_total<0){
-          if(!element_prop.nature.collision(entityCollider, undefined)){
-            entityCollider.collisionUp = true;
-          }
-          entityCollider.nature.collision(undefined, entityCollider)
+  function checkEntityMapCollision(map_element, map_element_x_pos, map_element_y_pos, entityCollider, movementPath){
+    let element_hitbox = [map_element_x_pos, map_element_y_pos, map_element_x_pos+1, map_element_y_pos+1];
+    let element_prop = world.currentMap.properties[map_element];
+    let entityCollider_hitbox = entityCollider.getHitbox();
+    let x_total = movementPath[1][0]-movementPath[0][0];
+    let y_total = movementPath[1][1]-movementPath[0][1];
+    let entityCollider_future_hitbox_x = [entityCollider_hitbox[0]+x_total, entityCollider_hitbox[1], entityCollider_hitbox[2]+x_total, entityCollider_hitbox[3]];
+    let entityCollider_future_hitbox_y = [entityCollider_hitbox[0], entityCollider_hitbox[1]+y_total, entityCollider_hitbox[2], entityCollider_hitbox[3]+y_total];
+    var y_resp = true;
+    if(hitboxCollision(element_hitbox, entityCollider_future_hitbox_y)){
+      if(y_total>0){
+        y_resp = element_prop.nature.collision(world,entityCollider, undefined,1);
+        if(!y_resp){
+          entityCollider.collisionDown = true;
         }
       }
-      if(hitboxCollision(element_hitbox, entityCollider_future_hitbox_x)){
-        if(x_total>0){
-
-          if(!element_prop.nature.collision(entityCollider, undefined)){
-            entityCollider.collisionRight = true;
-          }
-          entityCollider.nature.collision(undefined, entityCollider)
-        }
-        else if(x_total<0){
-          if(!element_prop.nature.collision(entityCollider, undefined)){
-            entityCollider.collisionLeft = true;
-          }
-          entityCollider.nature.collision(undefined, entityCollider)
+      else if(y_total<0){
+        y_resp = element_prop.nature.collision(world,entityCollider, undefined,3);
+        if(!y_resp){
+          entityCollider.collisionUp = true;
         }
       }
     }
+    x_resp = true;
+    if(hitboxCollision(element_hitbox, entityCollider_future_hitbox_x)){
+      if(x_total>0){
+        x_resp = element_prop.nature.collision(world,entityCollider, undefined,4);
+        if(!x_resp){
+          entityCollider.collisionRight = true;
+        }
+      }
+      else if(x_total<0){
+        x_resp = element_prop.nature.collision(world,entityCollider, undefined,2);
+        if(!x_resp){
+          entityCollider.collisionLeft = true;
+        }
+      }
+    }
+    return x_resp && y_resp;
+  }
 
+  //True if 2 hitboxes overlap, false otherwise
   function hitboxCollision(hitbox1, hitbox2){
     if(hitbox1[0]<hitbox2[2] && hitbox1[2]>hitbox2[0] && hitbox1[1]<hitbox2[3] && hitbox1[3]>hitbox2[1]){
       return true;
     }
-
     return false;
   }
+
 
   //Tells all entities to move to new position based on collision status. Resets collisions of each entity.
   function movePositions(){

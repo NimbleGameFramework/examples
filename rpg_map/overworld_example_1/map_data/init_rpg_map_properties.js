@@ -1,5 +1,5 @@
-var simple_solid_nature = new Nature(world_example_1,collisionLibrary.solid,undefined,undefined,undefined);
-var simple_empty_nature = new Nature(world_example_1,collisionLibrary.empty,undefined,undefined,undefined);
+var simple_solid_nature = new Nature(collisionLibrary.solid,undefined,undefined,undefined);
+var simple_empty_nature = new Nature(collisionLibrary.empty,undefined,undefined,undefined);
 
 var init_rpg_map_properties = {
   "wall":{
@@ -9,9 +9,8 @@ var init_rpg_map_properties = {
   "door":{
     "texture":"../rpg_data/textures/door.png",
     "nature":new Nature(
-      world_example_1,
-      function(entity, entityCollider){
-        collisionLibrary.alert(entity,entityCollider,"Cant go outside yet")
+      function(entity, entityCollider,direction){
+        collisionLibrary.alert(entity,entityCollider,direction,"Cant go outside yet")
       },
       undefined,
       undefined,
@@ -24,9 +23,8 @@ var init_rpg_map_properties = {
   "coatHanger":{
     "texture":"../rpg_data/textures/coatHanger.png",
     "nature":new Nature(
-      world_example_1,
-      function(entity, entityCollider){
-        collisionLibrary.alert(entity,entityCollider,"Damn, nothing fits")
+      function(entity, entityCollider,direction){
+        collisionLibrary.alert(entity,entityCollider,direction,"Damn, nothing fits")
       },
       undefined,
       undefined,
