@@ -76,7 +76,7 @@ var collisionLibrary = {
       return collisionRecursion;
     }
   },
-  "alert": function(entity, entityCollider,direction, message){
+  "alert": function(world,entity, entityCollider,direction, message){
     if(entity.isCharacter){
       entity.stopCharacter();
       alert(message);

@@ -120,14 +120,17 @@ var World = function() {
     resp = resp && checkEntityCollision(world.mainCharacter,entity_param, from_to);
     for(let i = 0;i<world.entities.length;i++){
       let current_entity = world.entities[i];
-      resp = resp && checkEntityCollision(current_entity,entity_param, from_to);
-
+      current_entity_check= checkEntityCollision(current_entity,entity_param, from_to);
+      resp = current_entity_check && resp;
     }
+    let count_map_size = 0;
     for(let i=0;i<world.currentMap.layout_data.length;i++){
       let current_map_row = world.currentMap.layout_data[i];
       for(let j=0;j<current_map_row.length;j++){
+        count_map_size = count_map_size +1;
         current_map_element = current_map_row[j];
-        resp = resp && checkEntityMapCollision(current_map_element,j,i,entity_param,from_to);
+        current_map_element_check = checkEntityMapCollision(current_map_element,j,i,entity_param,from_to);
+        resp = current_map_element_check && resp;
       }
     }
     return resp;
@@ -146,12 +149,13 @@ var World = function() {
     let y_total = movementPath[1][1]-movementPath[0][1];
     let entityCollider_future_hitbox_x = [entityCollider_hitbox[0]+x_total, entityCollider_hitbox[1], entityCollider_hitbox[2]+x_total, entityCollider_hitbox[3]];
     let entityCollider_future_hitbox_y = [entityCollider_hitbox[0], entityCollider_hitbox[1]+y_total, entityCollider_hitbox[2], entityCollider_hitbox[3]+y_total];
-    var y_collision = true;
+    let y_collision = true;
     if(hitboxCollision(entity_hitbox, entityCollider_future_hitbox_y)){
       if(y_total>0){
         y_collision =entity.nature.collision(world,entityCollider, entity, 1)
         if(!y_collision){
           entityCollider.collisionDown = true;
+
         }
       }
       else if(y_total<0){
@@ -161,7 +165,7 @@ var World = function() {
         }
       }
     }
-    var x_collision = true;
+    let x_collision = true;
     if(hitboxCollision(entity_hitbox, entityCollider_future_hitbox_x)){
       if(x_total>0){
         x_collision = entity.nature.collision(world, entityCollider, entity,4);
@@ -189,7 +193,7 @@ var World = function() {
     let y_total = movementPath[1][1]-movementPath[0][1];
     let entityCollider_future_hitbox_x = [entityCollider_hitbox[0]+x_total, entityCollider_hitbox[1], entityCollider_hitbox[2]+x_total, entityCollider_hitbox[3]];
     let entityCollider_future_hitbox_y = [entityCollider_hitbox[0], entityCollider_hitbox[1]+y_total, entityCollider_hitbox[2], entityCollider_hitbox[3]+y_total];
-    var y_resp = true;
+    let y_resp = true;
     if(hitboxCollision(element_hitbox, entityCollider_future_hitbox_y)){
       if(y_total>0){
         y_resp = element_prop.nature.collision(world,entityCollider, undefined,1);
@@ -204,7 +208,7 @@ var World = function() {
         }
       }
     }
-    x_resp = true;
+    let x_resp = true;
     if(hitboxCollision(element_hitbox, entityCollider_future_hitbox_x)){
       if(x_total>0){
         x_resp = element_prop.nature.collision(world,entityCollider, undefined,4);
@@ -219,6 +223,7 @@ var World = function() {
         }
       }
     }
+
     return x_resp && y_resp;
   }
 

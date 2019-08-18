@@ -125,6 +125,10 @@ function Entity(world_object) {
   this.collisionLeft = false;
   this.collisionRight = false;
 
+  this.setCollisionDown = function(){
+    that.collisionDown = true;
+  }
+
   //Predicts the apropriate movement based on the entity nature
   //Returns the origin and the destination of the entity
   this.predictMovement = function(){
@@ -162,6 +166,13 @@ function Entity(world_object) {
     that.collisionDown = false;
     that.collisionLeft = false;
     that.collisionRight = false;
+  }
+
+  function activateCollision(){
+    that.collisionUp = true;
+    that.collisionDown = true;
+    that.collisionLeft = true;
+    that.collisionRight = true;
   }
 
 }

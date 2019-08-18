@@ -189,6 +189,15 @@ function Character(world_object) {
     that.collisionRight = false;
   }
 
+  function activateVerticalCollision(){
+    that.collisionUp = true;
+    that.collisionDown = true;
+  }
+  function activateHorizontalCollision(){
+    that.collisionLeft = true;
+    that.collisionRight = true;
+  }
+
   //Cancels all currently pressed arrow keys
   this.stopCharacter = function() {
     toggle_key_up = false;

@@ -9,8 +9,8 @@ var init_rpg_map_properties = {
   "door":{
     "texture":"../rpg_data/textures/door.png",
     "nature":new Nature(
-      function(entity, entityCollider,direction){
-        collisionLibrary.alert(entity,entityCollider,direction,"Cant go outside yet")
+      function(world,entity,entityCollider,direction){
+        collisionLibrary.alert(world,entity,entityCollider,direction,"Cant go outside yet")
       },
       undefined,
       undefined,
@@ -23,8 +23,9 @@ var init_rpg_map_properties = {
   "coatHanger":{
     "texture":"../rpg_data/textures/coatHanger.png",
     "nature":new Nature(
-      function(entity, entityCollider,direction){
-        collisionLibrary.alert(entity,entityCollider,direction,"Damn, nothing fits")
+      function(world,entity, entityCollider,direction){
+
+        collisionLibrary.alert(world,entity,entityCollider,direction,"Damn, nothing fits")
       },
       undefined,
       undefined,
