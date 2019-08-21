@@ -45,42 +45,31 @@ var Map = function(world_object_param) {
   //Draw function that places the images of the world elements inside the MapContent space (Does not paint character or entities)
   //Takes into account both window size and character location
   this.draw = function(scale) {
-    let map_layer_inyection = "";
+    let map_layer_inyection = "<div id='mapLayer' style='height:" + scale + "px;left:" + x_px_displacement + "px;top:" + y_px_displacement + "px;'>";
     let y_added_displacement = 0;
     for (let i = 0; i < that.layout_data.length; i++) {
       let current_row = that.layout_data[i];
       y_total_row_displacement = y_px_displacement + y_added_displacement;
       y_added_displacement = y_added_displacement + scale;
-      map_layer_inyection = map_layer_inyection + "<div id='map_row_" + i + "' class='map_row' style='height:" + scale + "px;left:" + x_px_displacement + "px;top:" + y_total_row_displacement + "px;'>";
+      map_layer_inyection = map_layer_inyection + "<div id='map_row_" + i + "' class='map_row' style='height:" + scale + "px;'>";
       for (let j = 0; j < current_row.length; j++) {
+
         let current_square = current_row[j];
         let current_texture = that.properties[current_square]["texture"];
         map_layer_inyection = map_layer_inyection + "<img id='map_img_" + i + "_" + j + "' class='map_element' src='" + current_texture + "' style='width:" + scale + "px;'>";
       }
       map_layer_inyection = map_layer_inyection + "</div>";
     }
+    map_layer_inyection = map_layer_inyection+"</div>";
     document.getElementById("MapContent").innerHTML = map_layer_inyection;
   };
 
   //This function changes the style of each individual map row and map image instead of redrawing it, this makes movement smoother
   this.update = function(scale) {
-    let y_added_displacement = 0;
-    for (let i = 0; i < that.layout_data.length; i++) {
-      let current_row = that.layout_data[i];
-      y_total_row_displacement = y_px_displacement + y_added_displacement;
-      y_added_displacement = y_added_displacement + scale;
-      $("#map_row_" + i).css({
+      $("#mapLayer").css({
         "height": scale + "px",
         "left": x_px_displacement + "px",
-        "top": y_total_row_displacement + "px"
+        "top": y_px_displacement + "px"
       });
-      for (let j = 0; j < current_row.length; j++) {
-        let current_square = current_row[j];
-        let current_texture = that.properties[current_square]["texture"];
-        $("#map_img_" + i + "_" + j).css({
-          "width": scale + "px"
-        });
-      }
-    }
   }
 }

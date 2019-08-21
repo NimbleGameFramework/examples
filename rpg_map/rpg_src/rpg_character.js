@@ -34,7 +34,7 @@ function Character(world_object) {
     //Defines initial variable values
     that = $.extend(that, that.properties["init"]);
     //Preloads character animation images outside of window
-    let all_textures_listed = that.properties["texture"];
+    let all_textures_listed=that.properties["texture"];
     let textures_keys = Object.keys(all_textures_listed);
     for(let i = 0; i<textures_keys.length;i++){
       let animation_frames = that.properties["texture"][textures_keys[i]];

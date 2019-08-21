@@ -1,7 +1,7 @@
 var World = function() {
   //Determines the size of the world (map, character and entities) on screen in pixels per unit(size of a single tile or size of character)
   var world = this;
-  this.scale = 100;
+  this.scale = 75;
   this.time_per_frame = 33;
 
   this.mainCharacter = new Character(this);
@@ -9,6 +9,10 @@ var World = function() {
   this.entities = [];
   console.log("Creating world");
 
+  let rpgContentDiv = document.getElementById("rpgContent");
+  let cssInyection = "<style>body{overflow:hidden}#mapLayer{position:absolute}.map_row{padding:0;margin:0;white-space:nowrap;overflow:hidden;}.map_element{padding:0;margin:0;overflow:hidden}.character_element{position:absolute;padding:0;margin:0;overflow:hidden}.entity_element{position:absolute;padding:0;margin:0;overflow:hidden}#MapContent{z-index:0}#EntityContent{z-index:1}#CharacterContent{z-index:2}#MenuContent{z-index:3}</style>";
+  let divInyection = "<div id='MapContent'></div><div id='EntityContent'></div><div id='CharacterContent'></div><div id='MenuContent'></div>"
+  rpgContentDiv.innerHTML = cssInyection+divInyection;
   //Initializes the world building the character layer, the map layer and the entity layer
   this.init = function() {
     console.log("Initializing character");
@@ -124,14 +128,11 @@ var World = function() {
       resp = current_entity_check && resp;
     }
     let count_map_size = 0;
-    for(let i=0;i<world.currentMap.layout_data.length;i++){
-      let current_map_row = world.currentMap.layout_data[i];
-      for(let j=0;j<current_map_row.length;j++){
-        count_map_size = count_map_size +1;
-        current_map_element = current_map_row[j];
-        current_map_element_check = checkEntityMapCollision(current_map_element,j,i,entity_param,from_to);
-        resp = current_map_element_check && resp;
-      }
+    let entity_perimeter = boxPerimeter(hitboxOverlap(entity_param.getHitbox()));
+    for(let i=0;i<entity_perimeter.length;i++){
+      let current_element_coordinates = entity_perimeter[i];
+      let current_map_element = world.currentMap.layout_data[current_element_coordinates[1]][current_element_coordinates[0]];
+      resp = checkEntityMapCollision(current_map_element,current_element_coordinates[0],current_element_coordinates[1],entity_param,from_to) && resp;
     }
     return resp;
   }
@@ -142,7 +143,6 @@ var World = function() {
     if(entity.id==entityCollider.id){
       return true;
     }
-
     let entity_hitbox = entity.getHitbox();
     let entityCollider_hitbox = entityCollider.getHitbox();
     let x_total = movementPath[1][0]-movementPath[0][0];
@@ -152,14 +152,16 @@ var World = function() {
     let y_collision = true;
     if(hitboxCollision(entity_hitbox, entityCollider_future_hitbox_y)){
       if(y_total>0){
-        y_collision =entity.nature.collision(world,entityCollider, entity, 1)
+        if(!(entity.nature.collision===undefined)){y_collision=entity.nature.collision(world,entityCollider, entity, 1)}
+        else{y_collision=true}
         if(!y_collision){
           entityCollider.collisionDown = true;
 
         }
       }
       else if(y_total<0){
-        y_collision =entity.nature.collision(world,entityCollider, entity,3)
+        if(!(entity.nature.collision===undefined)){y_collision =entity.nature.collision(world,entityCollider, entity,3)}
+        else{y_collision=true}
         if(!y_collision){
           entityCollider.collisionUp = true;
         }
@@ -168,13 +170,15 @@ var World = function() {
     let x_collision = true;
     if(hitboxCollision(entity_hitbox, entityCollider_future_hitbox_x)){
       if(x_total>0){
-        x_collision = entity.nature.collision(world, entityCollider, entity,4);
+        if(!(entity.nature.collision===undefined)){x_collision = entity.nature.collision(world, entityCollider, entity,4);}
+        else{x_collision=true}
         if(!x_collision){
           entityCollider.collisionRight = true;
         }
       }
       else if(x_total<0){
-        x_collision = entity.nature.collision(world,entityCollider, entity,2);
+        if(!(entity.nature.collision===undefined)){x_collision = entity.nature.collision(world,entityCollider, entity,2);}
+        else{x_collision=true}
         if(!x_collision){
           entityCollider.collisionLeft = true;
         }
@@ -196,13 +200,15 @@ var World = function() {
     let y_resp = true;
     if(hitboxCollision(element_hitbox, entityCollider_future_hitbox_y)){
       if(y_total>0){
-        y_resp = element_prop.nature.collision(world,entityCollider, undefined,1);
+        if(!(element_prop.nature.collision===undefined)){y_resp = element_prop.nature.collision(world,entityCollider, undefined,1);}
+        else{y_resp=true;}
         if(!y_resp){
           entityCollider.collisionDown = true;
         }
       }
       else if(y_total<0){
-        y_resp = element_prop.nature.collision(world,entityCollider, undefined,3);
+        if(!(element_prop.nature.collision===undefined)){y_resp = element_prop.nature.collision(world,entityCollider, undefined,3);}
+        else{y_resp=true;}
         if(!y_resp){
           entityCollider.collisionUp = true;
         }
@@ -211,7 +217,8 @@ var World = function() {
     let x_resp = true;
     if(hitboxCollision(element_hitbox, entityCollider_future_hitbox_x)){
       if(x_total>0){
-        x_resp = element_prop.nature.collision(world,entityCollider, undefined,4);
+        if(!(element_prop.nature.collision===undefined)){x_resp = element_prop.nature.collision(world,entityCollider, undefined,4);}
+        else{x_resp=true;}
         if(!x_resp){
           entityCollider.collisionRight = true;
         }
@@ -233,6 +240,26 @@ var World = function() {
       return true;
     }
     return false;
+  }
+
+  //Provides a square where a hitbox is overlapping with the background
+  //Returns [OriginX,OriginY,EndX,EndY]
+  function hitboxOverlap(hitbox){
+    return [Math.floor(hitbox[0]),Math.floor(hitbox[1]),Math.ceil(hitbox[2]),Math.ceil(hitbox[3])];
+  }
+
+  //Provides all integer value coordinates around a box.
+  function boxPerimeter(box){
+    let resp = [];
+    for(let i = box[0]-1; i<box[2]+1;i++){
+      resp.push([i,box[1]-1]);
+      resp.push([i,box[3]]);
+    }
+    for(let j = box[1]; j<box[3];j++){
+      resp.push([box[0]-1,j]);
+      resp.push([box[2],j]);
+    }
+    return resp;
   }
 
 
