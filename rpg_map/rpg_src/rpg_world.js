@@ -147,8 +147,24 @@ var World = function() {
     let entityCollider_hitbox = entityCollider.getHitbox();
     let x_total = movementPath[1][0]-movementPath[0][0];
     let y_total = movementPath[1][1]-movementPath[0][1];
-    let entityCollider_future_hitbox_x = [entityCollider_hitbox[0]+x_total, entityCollider_hitbox[1], entityCollider_hitbox[2]+x_total, entityCollider_hitbox[3]];
-    let entityCollider_future_hitbox_y = [entityCollider_hitbox[0], entityCollider_hitbox[1]+y_total, entityCollider_hitbox[2], entityCollider_hitbox[3]+y_total];
+    let entityCollider_future_hitbox_x = [
+      entityCollider_hitbox[0]+x_total,
+      entityCollider_hitbox[1],
+      entityCollider_hitbox[2]+x_total,
+      entityCollider_hitbox[3]
+    ];
+    let entityCollider_future_hitbox_y = [
+      entityCollider_hitbox[0],
+      entityCollider_hitbox[1]+y_total,
+      entityCollider_hitbox[2],
+      entityCollider_hitbox[3]+y_total
+    ];
+    let entityCollider_future_hitbox_xy = [
+      entityCollider_hitbox[0]+x_total,
+      entityCollider_hitbox[1]+y_total,
+      entityCollider_hitbox[2]+x_total,
+      entityCollider_hitbox[3]+y_total
+    ];
     let y_collision = true;
     if(hitboxCollision(entity_hitbox, entityCollider_future_hitbox_y)){
       if(y_total>0){
@@ -156,7 +172,6 @@ var World = function() {
         else{y_collision=true}
         if(!y_collision){
           entityCollider.collisionDown = true;
-
         }
       }
       else if(y_total<0){
@@ -166,6 +181,9 @@ var World = function() {
           entityCollider.collisionUp = true;
         }
       }
+    }
+    if(y_collision){
+      entityCollider_future_hitbox_x = entityCollider_future_hitbox_xy;
     }
     let x_collision = true;
     if(hitboxCollision(entity_hitbox, entityCollider_future_hitbox_x)){
@@ -195,12 +213,30 @@ var World = function() {
     let entityCollider_hitbox = entityCollider.getHitbox();
     let x_total = movementPath[1][0]-movementPath[0][0];
     let y_total = movementPath[1][1]-movementPath[0][1];
-    let entityCollider_future_hitbox_x = [entityCollider_hitbox[0]+x_total, entityCollider_hitbox[1], entityCollider_hitbox[2]+x_total, entityCollider_hitbox[3]];
-    let entityCollider_future_hitbox_y = [entityCollider_hitbox[0], entityCollider_hitbox[1]+y_total, entityCollider_hitbox[2], entityCollider_hitbox[3]+y_total];
+    let entityCollider_future_hitbox_x = [
+      entityCollider_hitbox[0]+x_total,
+      entityCollider_hitbox[1],
+      entityCollider_hitbox[2]+x_total,
+      entityCollider_hitbox[3]
+    ];
+    let entityCollider_future_hitbox_y = [
+      entityCollider_hitbox[0],
+      entityCollider_hitbox[1]+y_total,
+      entityCollider_hitbox[2],
+      entityCollider_hitbox[3]+y_total
+    ];
+    let entityCollider_future_hitbox_xy = [
+      entityCollider_hitbox[0]+x_total,
+      entityCollider_hitbox[1]+y_total,
+      entityCollider_hitbox[2]+x_total,
+      entityCollider_hitbox[3]+y_total
+    ];
     let y_resp = true;
     if(hitboxCollision(element_hitbox, entityCollider_future_hitbox_y)){
       if(y_total>0){
-        if(!(element_prop.nature.collision===undefined)){y_resp = element_prop.nature.collision(world,entityCollider, undefined,1);}
+        if(!(element_prop.nature.collision===undefined)){
+          y_resp = element_prop.nature.collision(world,entityCollider, undefined,1);
+        }
         else{y_resp=true;}
         if(!y_resp){
           entityCollider.collisionDown = true;
@@ -213,6 +249,9 @@ var World = function() {
           entityCollider.collisionUp = true;
         }
       }
+    }
+    if(y_resp){
+      entityCollider_future_hitbox_x = entityCollider_future_hitbox_xy;
     }
     let x_resp = true;
     if(hitboxCollision(element_hitbox, entityCollider_future_hitbox_x)){
