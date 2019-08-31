@@ -4,11 +4,18 @@ var init_rpg_character_properties = {
     "y_pos":3,
     "texture":"down",
     "animation_cycle":1500,
-    "x_hitbox_start":0.14,
+    "x_hitbox_start":0.35,
     "y_hitbox_start":0.22,
-    "x_hitbox_end":0.86,
+    "x_hitbox_end":0.65,
     "y_hitbox_end":0.78,
-    "nature":simple_solid_nature
+    "nature": new Nature(
+      function(world,entity, entityCollider,direction){
+        if(entity.type=="slime"){window.location.reload(false);}
+      },
+      undefined,
+      undefined,
+      movementLibrary.bounceOnCollide
+    )
   },
   "texture":{
     "up":[

@@ -1,3 +1,6 @@
+var width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+var hight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
 var World = function() {
   //Determines the size of the world (map, character and entities) on screen in pixels per unit(size of a single tile or size of character)
   var world = this;
@@ -165,44 +168,10 @@ var World = function() {
       entityCollider_hitbox[2]+x_total,
       entityCollider_hitbox[3]+y_total
     ];
-    let y_collision = true;
-    if(hitboxCollision(entity_hitbox, entityCollider_future_hitbox_y)){
-      if(y_total>0){
-        if(!(entity.nature.collision===undefined)){y_collision=entity.nature.collision(world,entityCollider, entity, 1)}
-        else{y_collision=true}
-        if(!y_collision){
-          entityCollider.collisionDown = true;
-        }
-      }
-      else if(y_total<0){
-        if(!(entity.nature.collision===undefined)){y_collision =entity.nature.collision(world,entityCollider, entity,3)}
-        else{y_collision=true}
-        if(!y_collision){
-          entityCollider.collisionUp = true;
-        }
-      }
-    }
-    if(y_collision){
-      entityCollider_future_hitbox_x = entityCollider_future_hitbox_xy;
-    }
-    let x_collision = true;
-    if(hitboxCollision(entity_hitbox, entityCollider_future_hitbox_x)){
-      if(x_total>0){
-        if(!(entity.nature.collision===undefined)){x_collision = entity.nature.collision(world, entityCollider, entity,4);}
-        else{x_collision=true}
-        if(!x_collision){
-          entityCollider.collisionRight = true;
-        }
-      }
-      else if(x_total<0){
-        if(!(entity.nature.collision===undefined)){x_collision = entity.nature.collision(world,entityCollider, entity,2);}
-        else{x_collision=true}
-        if(!x_collision){
-          entityCollider.collisionLeft = true;
-        }
-      }
-    }
-    return y_collision && x_collision;
+    let hitbox_collision_x = hitboxCollision(entity_hitbox, entityCollider_future_hitbox_x);
+    let hitbox_collision_y = hitboxCollision(entity_hitbox, entityCollider_future_hitbox_y);
+    let hitbox_collision_xy = hitboxCollision(entity_hitbox, entityCollider_future_hitbox_xy);
+    return processCollision(hitbox_collision_x, hitbox_collision_y, hitbox_collision_xy,x_total,y_total, entity, entityCollider);
   }
 
   //Checks if 2 entities collide, if true takes appropriate action
@@ -231,11 +200,19 @@ var World = function() {
       entityCollider_hitbox[2]+x_total,
       entityCollider_hitbox[3]+y_total
     ];
+
+    let hitbox_collision_x = hitboxCollision(element_hitbox, entityCollider_future_hitbox_x);
+    let hitbox_collision_y = hitboxCollision(element_hitbox, entityCollider_future_hitbox_y);
+    let hitbox_collision_xy = hitboxCollision(element_hitbox, entityCollider_future_hitbox_xy);
+    return processCollision(hitbox_collision_x, hitbox_collision_y, hitbox_collision_xy,x_total,y_total, element_prop, entityCollider);
+}
+
+function processCollision(hitbox_collision_x, hitbox_collision_y, hitbox_collision_xy,x_total,y_total, element_prop, entityCollider){
     let y_resp = true;
-    if(hitboxCollision(element_hitbox, entityCollider_future_hitbox_y)){
+    if(hitbox_collision_y){
       if(y_total>0){
         if(!(element_prop.nature.collision===undefined)){
-          y_resp = element_prop.nature.collision(world,entityCollider, undefined,1);
+          y_resp = element_prop.nature.collision(world,entityCollider, element_prop,1);
         }
         else{y_resp=true;}
         if(!y_resp){
@@ -243,34 +220,99 @@ var World = function() {
         }
       }
       else if(y_total<0){
-        if(!(element_prop.nature.collision===undefined)){y_resp = element_prop.nature.collision(world,entityCollider, undefined,3);}
+        if(!(element_prop.nature.collision===undefined)){y_resp = element_prop.nature.collision(world,entityCollider, element_prop,3);}
         else{y_resp=true;}
         if(!y_resp){
           entityCollider.collisionUp = true;
         }
       }
     }
-    if(y_resp){
-      entityCollider_future_hitbox_x = entityCollider_future_hitbox_xy;
-    }
     let x_resp = true;
-    if(hitboxCollision(element_hitbox, entityCollider_future_hitbox_x)){
+    if(hitbox_collision_x){
       if(x_total>0){
-        if(!(element_prop.nature.collision===undefined)){x_resp = element_prop.nature.collision(world,entityCollider, undefined,4);}
+        if(!(element_prop.nature.collision===undefined)){x_resp = element_prop.nature.collision(world,entityCollider, element_prop,4);}
         else{x_resp=true;}
         if(!x_resp){
           entityCollider.collisionRight = true;
         }
       }
       else if(x_total<0){
-        x_resp = element_prop.nature.collision(world,entityCollider, undefined,2);
+        if(!(element_prop.nature.collision===undefined)){x_resp = element_prop.nature.collision(world,entityCollider, element_prop,2);}
+        else{x_resp=true;}
         if(!x_resp){
           entityCollider.collisionLeft = true;
         }
       }
     }
+    var xy_resp = true;
+    if(!hitbox_collision_x && !hitbox_collision_y && hitbox_collision_xy){
 
-    return x_resp && y_resp;
+      if(x_total>0 && y_total<0){
+        if(!(element_prop.nature.collision===undefined)){xy_resp = element_prop.nature.collision(world,entityCollider, element_prop,1);}
+        else{xy_resp=true;}
+        if(!xy_resp){
+          if(entityCollider.collisionUp == false){
+            entityCollider.collisionRight = true;
+          }
+          else if(entityCollider.collisionRight == false){
+            entityCollider.collisionUp = true;
+          }
+          else{
+            entityCollider.collisionRight = true;
+            entityCollider.collisionUp = true;
+          }
+        }
+      }
+      else if(x_total<0 && y_total<0){
+        if(!(element_prop.nature.collision===undefined)){xy_resp = element_prop.nature.collision(world,entityCollider, element_prop,1);}
+        else{xy_resp=true;}
+        if(!xy_resp){
+          if(entityCollider.collisionUp == false){
+            entityCollider.collisionLeft = true;
+          }
+          else if(entityCollider.collisionLeft == false){
+            entityCollider.collisionUp = true;
+          }
+          else{
+            entityCollider.collisionLeft = true;
+            entityCollider.collisionUp = true;
+          }
+        }
+      }
+      else if(x_total>0 && y_total>0){
+        if(!(element_prop.nature.collision===undefined)){xy_resp = element_prop.nature.collision(world,entityCollider, element_prop,3);}
+        else{xy_resp=true;}
+        if(!xy_resp){
+          if(entityCollider.collisionDown == false){
+            entityCollider.collisionRight = true;
+          }
+          else if(entityCollider.collisionRight == false){
+            entityCollider.collisionDown = true;
+          }
+          else{
+            entityCollider.collisionRight = true;
+            entityCollider.collisionDown = true;
+          }
+        }
+      }
+      else if(x_total<0 && y_total>0){
+        if(!(element_prop.nature.collision===undefined)){xy_resp = element_prop.nature.collision(world,entityCollider, element_prop,3);}
+        else{xy_resp=true;}
+        if(!xy_resp){
+          if(entityCollider.collisionDown == false){
+            entityCollider.collisionLeft = true;
+          }
+          else if(entityCollider.collisionLeft == false){
+            entityCollider.collisionDown = true;
+          }
+          else{
+            entityCollider.collisionLeft = true;
+            entityCollider.collisionDown = true;
+          }
+        }
+      }
+    }
+    return x_resp && y_resp && xy_resp;
   }
 
   //True if 2 hitboxes overlap, false otherwise
@@ -287,10 +329,11 @@ var World = function() {
     return [Math.floor(hitbox[0]),Math.floor(hitbox[1]),Math.ceil(hitbox[2]),Math.ceil(hitbox[3])];
   }
 
-  //Provides all integer value coordinates around a box.
+  //Provides all integer value coordinates around a box. i.e. the coordinates of all map elements outside the perimiter of a box
   function boxPerimeter(box){
     let resp = [];
-    for(let i = box[0]-1; i<box[2]+1;i++){
+    //Get edges
+    for(let i = box[0]; i<box[2];i++){
       resp.push([i,box[1]-1]);
       resp.push([i,box[3]]);
     }
@@ -298,6 +341,11 @@ var World = function() {
       resp.push([box[0]-1,j]);
       resp.push([box[2],j]);
     }
+    //Get Corners
+    resp.push([box[0]-1,box[1]-1]);
+    resp.push([box[2],box[1]-1]);
+    resp.push([box[0]-1,box[3]]);
+    resp.push([box[2],box[3]]);
     return resp;
   }
 

@@ -22,13 +22,21 @@ var init_rpg_entity_properties = [{
       "y_pos": 5,
       "texture": "down",
       "animation_cycle": 1000,
-      "nature": new Nature( collisionLibrary.solid, undefined, undefined, movementLibrary.bounceOnCollide)
+      "nature": new Nature( collisionLibrary.reload, undefined, undefined, movementLibrary.bounceOnCollide),
+      "type":"slime"
     }, {
       "x_pos": 8,
       "y_pos": 8,
       "texture": "left",
       "animation_cycle": 1000,
-      "nature": new Nature( collisionLibrary.solid, undefined, undefined, movementLibrary.bounceOnCollide)
+      "nature": new Nature(
+        function(world,entity, entityCollider,direction){
+          if(entity.isCharacter){window.location.reload(false);}
+        },
+        undefined,
+        undefined,
+        movementLibrary.bounceOnCollide),
+      "type":"slime"
     }],
     "texture": {
       "up": [

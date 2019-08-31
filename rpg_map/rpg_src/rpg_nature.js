@@ -33,55 +33,60 @@ function Nature(collisionNature, overlapNature, interactionNature, movementNatur
   this.movement = movementNature;
 }
 
-//Collision nature must have at least 4 paramters, the first is wolrd object, the second is the entity the element is colliding with, the third is the entity/element itself, the third is the direction of the collision
+//Collision nature must have at least 4 paramters, the first is wolrd object, the second is the entityCollider the element is colliding with, the third is the entity/element itself, the fourth is the direction of the collision
 //1=up 2=right 3=down 4=left 0=not important
-//Direction relative to the entityCollider
+//Direction relative to the entity
 //Extra parameters may be added, however hey must be handled when linking the nature (see map properties, alert example)
-//Returns true if allows entity movement, returns false otherwise
+//Returns true if allows entityCollider movement, returns false otherwise
 var collisionLibrary = {
-  "empty": function(world, entity,entityCollider,direction){
+  "empty": function(world, entityCollider, entity,direction){
     //empty space always allows entity movment
     return true;
   },
-  "solid": function(world, entity, entityCollider,direction) {
+  "solid": function(world, entityCollider, entity,direction) {
     //Solid objects dont allow entityColliders to move in direction.
     return false
   },
-  "pushable": function(world, entity, entityCollider, direction) {
+  "pushable": function(world, entityCollider, entity, direction) {
     //Pushble objects will allow movement if no collision detected in direction
-    if(!entity.isCharacter){
+    if(!entityCollider.isCharacter){
       return false;
     }
-    let entity_path = entity.predictMovement();
+    let entity_path = entityCollider.predictMovement();
     if(direction == 1 || direction==3){
       let y_total = entity_path[1][1]-entity_path[0][1];
       var collisionRecursion = world.checkCollisions(
-        entityCollider,
-        [[entityCollider.x_pos,entityCollider.y_pos],[entityCollider.x_pos,entityCollider.y_pos+y_total]]
+        entity,
+        [[entity.x_pos,entity.y_pos],[entity.x_pos,entity.y_pos+y_total]]
       );
       if(collisionRecursion){
-        entityCollider.setPosition(entityCollider.x_pos,entityCollider.y_pos+y_total);
+        entity.setPosition(entity.x_pos,entity.y_pos+y_total);
       }
       return collisionRecursion;
     }
     if(direction == 2 || direction==4){
       let x_total = entity_path[1][0]-entity_path[0][0];
       var collisionRecursion =  world.checkCollisions(
-        entityCollider,
-        [[entityCollider.x_pos,entityCollider.y_pos],[entityCollider.x_pos+x_total,entityCollider.y_pos]]
+        entity,
+        [[entity.x_pos,entity.y_pos],[entity.x_pos+x_total,entity.y_pos]]
       );
       if(collisionRecursion){
-        entityCollider.setPosition(entityCollider.x_pos+x_total,entityCollider.y_pos);
+        entity.setPosition(entity.x_pos+x_total,entity.y_pos);
       }
       return collisionRecursion;
     }
   },
-  "alert": function(world,entity, entityCollider,direction, message){
-    if(entity.isCharacter){
-      entity.stopCharacter();
+  "alert": function(world,entityCollider,entity,direction, message){
+    //If mainCharacter collides with entity, display a message
+    if(entityCollider.isCharacter){
+      entityCollider.stopCharacter();
       alert(message);
     }
     return true;
+  },
+  "reload": function(world,entityCollider,entity,direction){
+    //If any object collides with current object, page is reloaded, but not refreshed. Great for restarting maps
+    window.location.reload(false);
   }
 }
 
