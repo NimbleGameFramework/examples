@@ -5,6 +5,7 @@ var Map = function(world_object_param) {
   //Initial loading of map
   this.layout_data = undefined;
   this.properties = undefined;
+  this.init_rpg_map_properties = undefined;
 
   //Determines the displacement of the map based on the location of the mainCharacter and the world scale
   var x_px_displacement = 0;
@@ -16,7 +17,8 @@ var Map = function(world_object_param) {
   }
 
   //Initial sequence to load map and properties
-  this.init = function() {
+  this.init = function(init_rpg_map_properties, rpg_map_data_path) {
+    that.init_rpg_map_properties = init_rpg_map_properties;
     getMap(rpg_map_data_path);
   }
 
@@ -33,7 +35,7 @@ var Map = function(world_object_param) {
 
   function processMap(data) {
     that.layout_data = $.csv.toArrays(data);
-    processProperties(init_rpg_map_properties);
+    processProperties(that.init_rpg_map_properties);
   };
 
   function processProperties(data) {

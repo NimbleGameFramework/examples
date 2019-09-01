@@ -8,7 +8,16 @@ function Entity(world_object) {
   this.properties = {};
   //Texture name of entity when he is facing left, down, right, up
   //Can be changed to other values for other expressions or actions manually, updates on draw() call
-  this.texture = "down";
+  this.animation = "down";
+  var current_animation_frame = "";
+
+  this.setAnimation = function(newAnimation){
+    that.animation = newAnimation;
+  }
+
+  this.getAnimation = function(){
+    return that.animation;
+  }
 
   //The identifier for this entity, used as the object html id
   this.id = undefined;
@@ -64,37 +73,35 @@ function Entity(world_object) {
     that.properties = data;
     //Defines initial variable values
     that = $.extend(that, that.properties["init"]);
+  }
+
+  //Draws the entity based on the current entity status.
+  this.draw = function(scale) {
     //Preloads character animation images outside of window
+    console.log(that.properties);
     let all_textures_listed = that.properties["texture"];
     let textures_keys = Object.keys(all_textures_listed);
     for(let i = 0; i<textures_keys.length;i++){
       let animation_frames = that.properties["texture"][textures_keys[i]];
       for(let j = 0;j<animation_frames.length;j++){
         let current_frame = animation_frames[j];
-        Image2 = new Image(150,150);
-        Image2.src = current_frame;
+        let imageObject = new Image();
+        imageObject.src = current_frame;
+        imageObject.id = that.id+"_"+textures_keys[i]+"_"+j;
+        imageObject.style = "display:none;";
+        imageObject.className = "entity_element";
+        document.getElementById("EntityContent").appendChild(imageObject);
       }
     }
-  }
-
-  //Draws the entity based on the current entity status.
-  this.draw = function(scale) {
-    let entityTexturePath = that.defineAnimationFrame();
-    let entity_layer_inyection = "<img id='"+that.id+"' class='entity_element' style='width:" + scale + "px;top:" +
-      that.y_px_displacement + "px;left:" + that.x_px_displacement + "px' src='" + entityTexturePath + "'>";
-    document.getElementById("EntityContent").innerHTML = document.getElementById("EntityContent").innerHTML+entity_layer_inyection;
+    current_animation_frame = that.defineAnimationFrame();
+    document.getElementById(current_animation_frame).style = "width:" + scale + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;";
   }
 
   //Updates the entity based on the current entity status.
   this.update = function(scale) {
-    let entityTexturePath = that.defineAnimationFrame();
-    let main_entity_element = $("#"+that.id);
-    main_entity_element.css({
-      "width":scale+"px",
-      "top":that.y_px_displacement+"px",
-      "left":that.x_px_displacement+"px"
-    });
-    main_entity_element.attr("src", entityTexturePath);
+    document.getElementById(current_animation_frame).style = "display:none;";
+    current_animation_frame = that.defineAnimationFrame();
+    document.getElementById(current_animation_frame).style = "width:" + scale + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;";
   }
 
   this.advanceAnimationTime = function(){
@@ -104,16 +111,15 @@ function Entity(world_object) {
   //Based on the current time, the amount of frames in a animation, the total duration of a animation
   //Returns the Current frame that should be painted
   this.defineAnimationFrame = function(){
-    let current_animation_group = that.properties["texture"][that.texture];
+    let current_animation_group = that.properties["texture"][that.getAnimation()];
     let time_per_animation_frame = (that.animation_cycle/current_animation_group.length);
     if(that.animation_time>that.animation_cycle){
       that.animation_time = 0;
-      return current_animation_group[0];
+      return that.id+"_"+that.getAnimation()+"_0";
     }
     for(var i = 0; i<current_animation_group.length;i++){
       if(that.animation_time>=(i*time_per_animation_frame)&&that.animation_time<=((i+1)*time_per_animation_frame)){
-
-        return current_animation_group[i];
+        return that.id+"_"+that.getAnimation()+"_"+i;
       }
     }
     return "error";
@@ -124,10 +130,6 @@ function Entity(world_object) {
   this.collisionDown = false;
   this.collisionLeft = false;
   this.collisionRight = false;
-
-  this.setCollisionDown = function(){
-    that.collisionDown = true;
-  }
 
   //Predicts the apropriate movement based on the entity nature
   //Returns the origin and the destination of the entity

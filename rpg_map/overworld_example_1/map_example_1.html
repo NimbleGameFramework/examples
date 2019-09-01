@@ -12,7 +12,6 @@
     <body>
         <div id="rpgContent">
     </body>
-
     <script src="../../lib/jquery-3.4.1.js"></script>
     <script src="../../lib/jquery.csv.js"></script>
     <script src="../rpg_src/rpg_entity.js"></script>
@@ -20,19 +19,6 @@
     <script src="../rpg_src/rpg_map.js"></script>
     <script src="../rpg_src/rpg_world.js"></script>
     <script src="../rpg_src/rpg_nature.js"></script>
-    <script>
-      //These are the main properties that need to be defined in order to load the map.
-      //You can change map by either changing these variables, or by changing the url using javascript.
-      //The csv describing the current map and the location of all elements
-      var rpg_map_data_path = "./map_data/rpg_map_data.csv";
-      //Call to initialize and paint the world with all objects based on file paths
-      var world_example_1 = new World();
-    </script>
+    <script src="./map_data/init_rpg_world.js"></script>
 
-    <script src="./map_data/init_rpg_map_properties.js"></script>
-    <script src="./map_data/init_rpg_character_properties.js"></script>
-    <script src="./map_data/init_rpg_entity_properties.js"></script>
-    <script>
-      world_example_1.init();
-    </script>
 </html>

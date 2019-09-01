@@ -20,14 +20,14 @@ var init_rpg_entity_properties = [{
     "init": [{
       "x_pos": 5,
       "y_pos": 5,
-      "texture": "down",
+      "animation": "down",
       "animation_cycle": 1000,
       "nature": new Nature( collisionLibrary.reload, undefined, undefined, movementLibrary.bounceOnCollide),
       "type":"slime"
     }, {
       "x_pos": 8,
       "y_pos": 8,
-      "texture": "left",
+      "animation": "left",
       "animation_cycle": 1000,
       "nature": new Nature(
         function(world,entity, entityCollider,direction){

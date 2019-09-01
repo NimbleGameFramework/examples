@@ -100,64 +100,64 @@ var movementLibrary = {
     let x_move = 0;
     let y_move = 0;
 
-    if(entity.texture == "up"){
+    if(entity.getAnimation() == "up"){
       y_move = -entity.movement_unit;
       var collisionRecursion =  world.checkCollisions(entity, [[entity.x_pos, entity.y_pos],[entity.x_pos, entity.y_pos+y_move]]);
       if(!collisionRecursion){
-        entity.texture = "down"
+        entity.setAnimation("down");
       }
     }
-    else if(entity.texture == "down"){
+    else if(entity.getAnimation() == "down"){
       y_move = entity.movement_unit;
       var collisionRecursion =  world.checkCollisions(entity, [[entity.x_pos, entity.y_pos],[entity.x_pos, entity.y_pos+y_move]]);
       if(!collisionRecursion){
-        entity.texture = "up"
+        entity.setAnimation("up");
       }
     }
-    else if(entity.texture == "right"){
+    else if(entity.getAnimation() == "right"){
       x_move = entity.movement_unit;
       var collisionRecursion =  world.checkCollisions(entity, [[entity.x_pos, entity.y_pos],[entity.x_pos+x_move, entity.y_pos]]);
       if(!collisionRecursion){
-        entity.texture = "left"
+        entity.setAnimation("left");
       }
     }
-    else if(entity.texture == "left"){
+    else if(entity.getAnimation() == "left"){
       x_move = -entity.movement_unit;
       var collisionRecursion =  world.checkCollisions(entity, [[entity.x_pos, entity.y_pos],[entity.x_pos+x_move, entity.y_pos]]);
       if(!collisionRecursion){
-        entity.texture = "right"
+        entity.setAnimation("right");
       }
     }
-    else if(entity.texture == "up_left"){
+    else if(entity.getAnimation() == "up_left"){
       y_move = -entity.movement_unit;
       x_move = -entity.movement_unit;
       var collisionRecursion =  world.checkCollisions(entity, [[entity.x_pos, entity.y_pos],[entity.x_pos+x_move, entity.y_pos+y_move]]);
       if(!collisionRecursion){
-        entity.texture = "down_right"
+        entity.setAnimation("down_right");
       }
     }
-    else if(entity.texture == "up_right"){
+    else if(entity.getAnimation() == "up_right"){
       y_move = -entity.movement_unit;
       x_move = entity.movement_unit;
       var collisionRecursion =  world.checkCollisions(entity, [[entity.x_pos, entity.y_pos],[entity.x_pos+x_move, entity.y_pos+y_move]]);
       if(!collisionRecursion){
-        entity.texture = "down_left"
+        entity.setAnimation("down_left");
       }
     }
-    else if(entity.texture == "down_right"){
+    else if(entity.getAnimation() == "down_right"){
       y_move = entity.movement_unit;
       x_move = entity.movement_unit;
       var collisionRecursion =  world.checkCollisions(entity, [[entity.x_pos, entity.y_pos],[entity.x_pos+x_move, entity.y_pos+y_move]]);
       if(!collisionRecursion){
-        entity.texture = "up_left"
+        entity.setAnimation("up_left");
       }
     }
-    else if(entity.texture == "down_left"){
+    else if(entity.getAnimation() == "down_left"){
       y_move = entity.movement_unit;
       x_move = -entity.movement_unit;
       var collisionRecursion =  world.checkCollisions(entity, [[entity.x_pos, entity.y_pos],[entity.x_pos+x_move, entity.y_pos+y_move]]);
       if(!collisionRecursion){
-        entity.texture = "up_right"
+        entity.setAnimation("up_right");
       }
     }
 
@@ -166,31 +166,31 @@ var movementLibrary = {
   "moveInDirection":function(world, entity){
     let x_move = 0;
     let y_move = 0;
-    if(entity.texture == "up"){
+    if(entity.getAnimation() == "up"){
       y_move = -entity.movement_unit;
     }
-    else if(entity.texture == "down"){
+    else if(entity.getAnimation() == "down"){
       y_move = entity.movement_unit;
     }
-    else if(entity.texture == "right"){
+    else if(entity.getAnimation() == "right"){
       x_move = entity.movement_unit;
     }
-    else if(entity.texture == "left"){
+    else if(entity.getAnimation() == "left"){
       x_move = -entity.movement_unit;
     }
-    else if(entity.texture == "up_left"){
+    else if(entity.getAnimation() == "up_left"){
       y_move = -entity.movement_unit;
       x_move = -entity.movement_unit;
     }
-    else if(entity.texture == "up_right"){
+    else if(entity.getAnimation() == "up_right"){
       y_move = -entity.movement_unit;
       x_move = entity.movement_unit;
     }
-    else if(entity.texture == "down_right"){
+    else if(entity.getAnimation() == "down_right"){
       y_move = entity.movement_unit;
       x_move = entity.movement_unit;
     }
-    else if(entity.texture == "down_left"){
+    else if(entity.getAnimation() == "down_left"){
       y_move = entity.movement_unit;
       x_move = -entity.movement_unit;
     }

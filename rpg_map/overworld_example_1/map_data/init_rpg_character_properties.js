@@ -2,7 +2,7 @@ var init_rpg_character_properties = {
   "init":{
     "x_pos":3,
     "y_pos":3,
-    "texture":"down",
+    "animation":"down",
     "animation_cycle":1500,
     "x_hitbox_start":0.35,
     "y_hitbox_start":0.22,

@@ -4,6 +4,7 @@ function Character(world_object) {
   Entity.call(this, world_object);
   var world = world_object;
   var that = this;
+  var current_animation_frame = "";
   this.isCharacter = true;
 
   //Status of the menu
@@ -21,7 +22,7 @@ function Character(world_object) {
   var toggle_key_left = false;
 
   //Initializes the character and all its properties
-  this.init = function() {
+  this.init = function(init_rpg_character_properties) {
     that.id = "main_character";
     processCharacterProperties(init_rpg_character_properties);
   }
@@ -36,25 +37,37 @@ function Character(world_object) {
     //Preloads character animation images outside of window
     let all_textures_listed=that.properties["texture"];
     let textures_keys = Object.keys(all_textures_listed);
+    world.load_assertion();
+  }
+
+  //Draws the entity based on the current entity status.
+  this.draw = function(scale) {
+    //Preloads character animation images outside of window
+    console.log(that.properties);
+    let all_textures_listed = that.properties["texture"];
+    let textures_keys = Object.keys(all_textures_listed);
     for(let i = 0; i<textures_keys.length;i++){
       let animation_frames = that.properties["texture"][textures_keys[i]];
       for(let j = 0;j<animation_frames.length;j++){
         let current_frame = animation_frames[j];
-        Image2 = new Image(150,150);
-        Image2.src = current_frame;
+        let imageObject = new Image();
+        imageObject.src = current_frame;
+        imageObject.id = that.id+"_"+textures_keys[i]+"_"+j;
+        imageObject.style = "display:none;";
+        imageObject.className = "entity_element";
+        document.getElementById("CharacterContent").appendChild(imageObject);
       }
     }
-    world.load_assertion();
+    current_animation_frame = that.defineAnimationFrame();
+    document.getElementById(current_animation_frame).style = "width:" + scale + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;";
   }
 
-  //Draws the character based on the current character status.
-  this.draw = function(scale) {
-    let characterTexturePath = that.defineAnimationFrame();
-    let character_layer_inyection = "<img id='"+that.id+"' class='character_element' style='width:" + scale + "px;top:" +
-      that.y_px_displacement + "px;left:" + that.x_px_displacement + "px' src='" + characterTexturePath + "'>";
-    document.getElementById("CharacterContent").innerHTML = character_layer_inyection;
+  //Updates the entity based on the current entity status.
+  this.update = function(scale) {
+    document.getElementById(current_animation_frame).style = "display:none;";
+    current_animation_frame = that.defineAnimationFrame();
+    document.getElementById(current_animation_frame).style = "width:" + scale + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;";
   }
-
 
   //Computer controls
   //Handles Key down, depending on menu status can either move the character, interact with object, move within a menu, or select in a menu
@@ -124,31 +137,31 @@ function Character(world_object) {
     let y_total = (-1 * toggle_key_up) + toggle_key_down;
     let x_total = (-1 * toggle_key_left) + toggle_key_right;
     if (y_total == -1 && x_total == 0) {
-      that.texture = "up";
+      that.setAnimation("up");
       that.advanceAnimationTime();
     } else if (y_total == 1 && x_total == 0) {
-      that.texture = "down";
+      that.setAnimation("down");
       that.advanceAnimationTime();
     } else if (y_total == 0 && x_total == 1) {
-      that.texture = "right";
+      that.setAnimation("right");
       that.advanceAnimationTime();
     } else if (y_total == 0 && x_total == -1) {
-      that.texture = "left";
+      that.setAnimation("left");
       that.advanceAnimationTime();
     } else if (y_total == 1 && x_total == 1) {
-      that.texture = "down_right";
+      that.setAnimation("down_right");
       that.advanceAnimationTime();
     } else if (y_total == -1 && x_total == -1) {
-      that.texture = "up_left";
+      that.setAnimation("up_left");
       that.advanceAnimationTime();
     } else if (y_total == -1 && x_total == 1) {
-      that.texture = "up_right";
+      that.setAnimation("up_right");
       that.advanceAnimationTime();
     } else if (y_total == 1 && x_total == -1) {
-      that.texture = "down_left";
+      that.setAnimation("down_left");
       that.advanceAnimationTime();
     } else {
-      if(that.texture=="down_left"||that.texture=="up_left"||that.texture=="up_left"||that.texture=="down_right"||that.texture=="up"||that.texture=="right"||that.texture=="down"||that.texture=="left"){
+      if(that.getAnimation()=="down_left"||that.getAnimation()=="up_left"||that.getAnimation()=="up_left"||that.getAnimation()=="down_right"||that.getAnimation()=="up"||that.getAnimation()=="right"||that.getAnimation()=="down"||that.getAnimation()=="left"){
         that.animation_time = 0;
       }
     }

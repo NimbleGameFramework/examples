@@ -1,3 +1,4 @@
+
 var width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 var hight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
@@ -17,11 +18,11 @@ var World = function() {
   let divInyection = "<div id='MapContent'></div><div id='EntityContent'></div><div id='CharacterContent'></div><div id='MenuContent'></div>"
   rpgContentDiv.innerHTML = cssInyection+divInyection;
   //Initializes the world building the character layer, the map layer and the entity layer
-  this.init = function() {
+  this.init = function(rpg_map_data_path, init_rpg_map_properties, init_rpg_character_properties, init_rpg_entity_properties) {
     console.log("Initializing character");
-    world.mainCharacter.init();
+    world.mainCharacter.init(init_rpg_character_properties);
     console.log("Initializing map");
-    world.currentMap.init();
+    world.currentMap.init(init_rpg_map_properties, rpg_map_data_path);
     console.log("Initializing entities");
     this.init_entities();
   }
@@ -56,10 +57,10 @@ var World = function() {
       for(let j = 0; j<current_entity_type.init.length;j++){
         let entity_properties = {};
         let new_entity = new Entity(world);
+        new_entity.id = "entity_"+i+"_"+j;
         entity_properties.init = current_entity_type.init[j];
         entity_properties.texture = current_entity_type.texture;
         new_entity.init(entity_properties);
-        new_entity.id = "entity_"+i+"_"+j;
         world.entities.push(new_entity);
       }
     }
