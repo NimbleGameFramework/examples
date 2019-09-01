@@ -1,0 +1,34 @@
+body{
+  font-family: Calibri;
+  font-size: 15px;
+  padding-top: 3vh;
+  padding-left:4%;
+  padding-right:4%;
+  padding-bottom: 2vh;
+}
+
+h2{
+    margin-top: 0;
+    padding-top: 5px;
+}
+
+p{
+	text-align:justify;
+}
+
+
+div.gallery {
+    display: inline-block;
+    margin: 5px;
+    border: 1px solid #ccc;
+    width: 180px;
+}
+
+div.gallery:hover {
+    border: 1px solid #777;
+}
+
+div.gallery img {
+    width: 100%;
+    height: auto;
+}
