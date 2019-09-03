@@ -94,7 +94,62 @@ var collisionLibrary = {
 //Based on collision data given by the world a entity can dodge elements and entities
 var movementLibrary = {
   "still":function(world, entity){
+    //No Movement
     return [[entity.x_pos, entity.y_pos],[entity.x_pos, entity.y_pos]];
+  },
+  "random":function(world, entity){
+    //Moves randomly in any direction, crazy, possesed, not always useful
+    let x_move = 0;
+    let y_move = 0;
+    if(!(entity.future_x == undefined) && !(entity.future_y == undefined)){
+      x_move = entity.future_x;
+      y_move = entity.future_y;
+      entity.future_x = undefined;
+      entity.future_y = undefined;
+      return [[entity.x_pos, entity.y_pos],[entity.x_pos+x_move, entity.y_pos+y_move]];
+    }
+
+    var randomInt = Math.floor((Math.random() * 8) + 1);
+    if(randomInt==1){
+      y_move = -entity.movement_unit;
+      entity.setAnimation("down");
+    }
+    else if(randomInt==2){
+      y_move = entity.movement_unit;
+      entity.setAnimation("up");
+    }
+    else if(randomInt==4){
+      x_move = entity.movement_unit;
+      entity.setAnimation("right");
+    }
+    else if(randomInt==5){
+      x_move = -entity.movement_unit;
+      entity.setAnimation("left");
+    }
+    else if(randomInt==6){
+      x_move = entity.movement_unit;
+      y_move = entity.movement_unit;
+      entity.setAnimation("down_right");
+    }
+    else if(randomInt==7){
+      x_move = -entity.movement_unit;
+      y_move = entity.movement_unit;
+      entity.setAnimation("down_left");
+    }
+    else if(randomInt==8){
+      x_move = -entity.movement_unit;
+      y_move = -entity.movement_unit;
+      entity.setAnimation("up_left");
+    }
+    else if(randomInt==3){
+      x_move = entity.movement_unit;
+      y_move = -entity.movement_unit;
+      entity.setAnimation("up_right");
+    }
+    entity.future_x = x_move;
+    entity.future_y = y_move;
+
+    return [[entity.x_pos, entity.y_pos],[entity.x_pos+x_move, entity.y_pos+y_move]];
   },
   "bounceOnCollide":function(world, entity){
     let x_move = 0;
