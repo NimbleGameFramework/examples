@@ -42,6 +42,7 @@ function Character(world_object) {
 
   //Draws the entity based on the current entity status.
   this.draw = function(scale) {
+    let img_width = scale*that.size;
     //Preloads character animation images outside of window
     console.log(that.properties);
     let all_textures_listed = that.properties["texture"];
@@ -59,14 +60,15 @@ function Character(world_object) {
       }
     }
     current_animation_frame = that.defineAnimationFrame();
-    document.getElementById(current_animation_frame).style = "width:" + scale + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;";
+    document.getElementById(current_animation_frame).style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;";
   }
 
   //Updates the entity based on the current entity status.
   this.update = function(scale) {
+    let img_width = scale*that.size;
     document.getElementById(current_animation_frame).style = "display:none;";
     current_animation_frame = that.defineAnimationFrame();
-    document.getElementById(current_animation_frame).style = "width:" + scale + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;";
+    document.getElementById(current_animation_frame).style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;";
   }
 
   //Computer controls

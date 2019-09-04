@@ -43,9 +43,10 @@ function Entity(world_object) {
   this.x_hitbox_end = 1;
   this.y_hitbox_end = 1;
 
+  this.size = 1;
   //Returns the coordinates of this entities hitbox
   this.getHitbox = function(){
-    return [this.x_pos+that.x_hitbox_start, this.y_pos+that.y_hitbox_start, this.x_pos+that.x_hitbox_end, this.y_pos+that.y_hitbox_end];
+    return [this.x_pos+(that.x_hitbox_start*that.size), this.y_pos+(that.y_hitbox_start*that.size), this.x_pos+(that.x_hitbox_end*that.size), this.y_pos+(that.y_hitbox_end*that.size)];
   }
 
   this.setDisplacement = function(x_displace_param, y_displace_param){
@@ -77,6 +78,7 @@ function Entity(world_object) {
 
   //Draws the entity based on the current entity status.
   this.draw = function(scale) {
+    let img_width = scale*that.size;
     //Preloads character animation images outside of window
     console.log(that.properties);
     let all_textures_listed = that.properties["texture"];
@@ -94,14 +96,15 @@ function Entity(world_object) {
       }
     }
     current_animation_frame = that.defineAnimationFrame();
-    document.getElementById(current_animation_frame).style = "width:" + scale + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;";
+    document.getElementById(current_animation_frame).style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;";
   }
 
   //Updates the entity based on the current entity status.
   this.update = function(scale) {
+    let img_width = scale*that.size;
     document.getElementById(current_animation_frame).style = "display:none;";
     current_animation_frame = that.defineAnimationFrame();
-    document.getElementById(current_animation_frame).style = "width:" + scale + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;";
+    document.getElementById(current_animation_frame).style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;";
   }
 
   this.advanceAnimationTime = function(){

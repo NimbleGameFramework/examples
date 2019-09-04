@@ -181,7 +181,8 @@ var init_rpg_entity_properties = [{
     "init": [{
       "x_pos": 9,
       "y_pos": 9,
-      "nature": new Nature( collisionLibrary.pushable, undefined, undefined, movementLibrary.still)
+      "nature": new Nature( collisionLibrary.pushable, undefined, undefined, movementLibrary.still),
+      "size":0.75
     }],
     "texture": {
       "up": ["../rpg_data/textures/entity/box.png"],
