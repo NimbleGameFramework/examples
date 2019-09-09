@@ -1,14 +1,28 @@
 # Web RPG Framework:
-This Framework helps you build web based rpg games. It includes several tools in order to make the development process easy and accessible. It's designed to be a open, free alternative to tools like RPG Maker. It does not seek to be as complete or as in depth as other tools, however it does try to open the door for further development.
+This Framework helps you build web based rpg games. It includes several tools in order to make the development process easy and accessible. It's designed to be a open, free alternative to tools like RPG Maker. It does not seek to be as complete or as in depth as others, however it does try to open the door for further development.
 
 ## Work to be done:
-1. I need to document the development process on the github wiki.
-2. Create a series of videos to make the learning process easy.
+1. Document the development process on the github wiki.
+2. Document the example in the github wiki
+3. Create a series of videos to make the learning process easy.
+4. Create example games to be featured on page
+5. Improve framework website
+
+## Features missing until 1.0 release:
+1. Overlap interaction between elements.
+2. Custom button interaction definition.
+3. Simple smartphone controls.
+4. Lock movement during animation cycle.
+5. Standardize developer movement variable space
 
 ## Future features:
-1. A visual novel system to help create slide show type pages with messages as well as decision mechanics.
-2. A rpg styled fighting mechanic inspired by pokemon or final fantasy.
-3. Further mechanic development, a more dynamic movement system that isn't restricted to a grid.
+1. Allow binding html elements to entities (Include a video, text, or any html element in game)
+1. Visual Novel engine integration.
+2. RPG fighting mechanics.
+3. Optimized movement iteration (If element nature still don't include in movement list)
+4. Create smarter movement and interaction mechanics for entities.
+5. Allow entity movement animations (Predefined paths).
+6. Allow for onClick interaction with elements in the world
 
 ## Used Libraries:
 
@@ -18,11 +32,16 @@ https://github.com/typeiii/jquery-csv
 
 ## Some interesting tools:
 
-Helps you draw in a 8bit style.
+Helps you draw in a 8bit style:
 
 https://make8bitart.com/
 
 
-Create RPG characters.
+Create RPG characters:
 
 http://gaurav.munjal.us/Universal-LPC-Spritesheet-Character-Generator/
+
+
+Visual Novel engine:
+
+https://monogatari.io/
