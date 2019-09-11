@@ -1,5 +1,5 @@
 # Web RPG Framework:
-This Framework helps you build web based rpg games. It includes several tools in order to make the development process easy and accessible. It's designed to be a open, free alternative to tools like RPG Maker. It does not seek to be as complete or as in depth as others, however it does try to open the door for further development.
+This framework helps you build web based rpg games. It tries to provide the tools that you will need to design and create a great game. It's meant to be a open, free alternative to tools like RPG Maker. It does not seek to be as complete or as in depth as others, however it does try to open the door for further development.
 
 ## Work to be done:
 1. Document the development process on the github wiki.
