@@ -14,7 +14,7 @@ var World = function() {
   console.log("Creating world");
 
   let rpgContentDiv = document.getElementById("rpgContent");
-  let cssInyection = "<style>body{overflow:hidden}#mapLayer{position:absolute}.map_row{padding:0;margin:0;white-space:nowrap;overflow:hidden;}.map_element{padding:0;margin:0;overflow:hidden}.character_element{position:absolute;padding:0;margin:0;overflow:hidden}.entity_element{position:absolute;padding:0;margin:0;overflow:hidden}#MapContent{z-index:0}#EntityContent{z-index:1}#CharacterContent{z-index:2}#MenuContent{z-index:3}</style>";
+  let cssInyection = "<style>body{overflow:hidden}#mapLayer{position:absolute}.map_row{padding:0;margin:0;white-space:nowrap;overflow:hidden;}.map_element{padding:0;margin:0;overflow:hidden}.character_element{position:absolute;padding:0;margin:0;overflow:hidden}.entity_element{position:absolute;padding:0;margin:0;overflow:hidden}</style>";
   let divInyection = "<div id='MapContent'></div><div id='EntityContent'></div><div id='CharacterContent'></div><div id='MenuContent'></div>"
   rpgContentDiv.innerHTML = cssInyection+divInyection;
   //Initializes the world building the character layer, the map layer and the entity layer
@@ -41,8 +41,8 @@ var World = function() {
           calculateDisplacement();
           console.log("Initializing world clock");
           window.setInterval(function() {
-            checkAllCollisions();
-            movePositions();
+            checkAllCollisionsAndMove();
+            checkAllOverlaps();
             world.update();
           }, world.time_per_frame);
         }
@@ -79,6 +79,14 @@ var World = function() {
     }
   }
 
+  this.remove_entity = function(entity_id){
+    for(let i = 0; i<world.entities.length;i++){
+      if(world.entities[i].id==entity_id){
+        world.entities[i].remove();
+        world.entities.splice(i,1);
+      }
+    }
+  }
 
   //Draws everything in the game world based on current properties
   this.draw = function() {
@@ -113,10 +121,12 @@ var World = function() {
   }
 
   //Checks collisions for each entity and the main character with the rest of the world
-  function checkAllCollisions(){
+  function checkAllCollisionsAndMove(){
     world.checkCollisions(world.mainCharacter, world.mainCharacter.predictMovement());
+    world.mainCharacter.movePosition();
     for(var i = 0; i<world.entities.length;i++){
       world.checkCollisions(world.entities[i], world.entities[i].predictMovement());
+      world.entities[i].movePosition();
     }
   }
 
@@ -132,7 +142,7 @@ var World = function() {
       resp = current_entity_check && resp;
     }
     let count_map_size = 0;
-    let entity_perimeter = boxPerimeter(hitboxOverlap(entity_param.getHitbox()));
+    let entity_perimeter = boxPerimeter(hitboxOverlapMap(entity_param.getHitbox()));
     for(let i=0;i<entity_perimeter.length;i++){
       let current_element_coordinates = entity_perimeter[i];
       let current_map_element = world.currentMap.layout_data[current_element_coordinates[1]][current_element_coordinates[0]];
@@ -169,9 +179,9 @@ var World = function() {
       entityCollider_hitbox[2]+x_total,
       entityCollider_hitbox[3]+y_total
     ];
-    let hitbox_collision_x = hitboxCollision(entity_hitbox, entityCollider_future_hitbox_x);
-    let hitbox_collision_y = hitboxCollision(entity_hitbox, entityCollider_future_hitbox_y);
-    let hitbox_collision_xy = hitboxCollision(entity_hitbox, entityCollider_future_hitbox_xy);
+    let hitbox_collision_x = hitboxOverlap(entity_hitbox, entityCollider_future_hitbox_x);
+    let hitbox_collision_y = hitboxOverlap(entity_hitbox, entityCollider_future_hitbox_y);
+    let hitbox_collision_xy = hitboxOverlap(entity_hitbox, entityCollider_future_hitbox_xy);
     return processCollision(hitbox_collision_x, hitbox_collision_y, hitbox_collision_xy,x_total,y_total, entity, entityCollider);
   }
 
@@ -202,9 +212,9 @@ var World = function() {
       entityCollider_hitbox[3]+y_total
     ];
 
-    let hitbox_collision_x = hitboxCollision(element_hitbox, entityCollider_future_hitbox_x);
-    let hitbox_collision_y = hitboxCollision(element_hitbox, entityCollider_future_hitbox_y);
-    let hitbox_collision_xy = hitboxCollision(element_hitbox, entityCollider_future_hitbox_xy);
+    let hitbox_collision_x = hitboxOverlap(element_hitbox, entityCollider_future_hitbox_x);
+    let hitbox_collision_y = hitboxOverlap(element_hitbox, entityCollider_future_hitbox_y);
+    let hitbox_collision_xy = hitboxOverlap(element_hitbox, entityCollider_future_hitbox_xy);
     return processCollision(hitbox_collision_x, hitbox_collision_y, hitbox_collision_xy,x_total,y_total, element_prop, entityCollider);
 }
 
@@ -317,7 +327,7 @@ function processCollision(hitbox_collision_x, hitbox_collision_y, hitbox_collisi
   }
 
   //True if 2 hitboxes overlap, false otherwise
-  function hitboxCollision(hitbox1, hitbox2){
+  function hitboxOverlap(hitbox1, hitbox2){
     if(hitbox1[0]<hitbox2[2] && hitbox1[2]>hitbox2[0] && hitbox1[1]<hitbox2[3] && hitbox1[3]>hitbox2[1]){
       return true;
     }
@@ -326,8 +336,41 @@ function processCollision(hitbox_collision_x, hitbox_collision_y, hitbox_collisi
 
   //Provides a square where a hitbox is overlapping with the background
   //Returns [OriginX,OriginY,EndX,EndY]
-  function hitboxOverlap(hitbox){
+  function hitboxOverlapMap(hitbox){
     return [Math.floor(hitbox[0]),Math.floor(hitbox[1]),Math.ceil(hitbox[2]),Math.ceil(hitbox[3])];
+  }
+
+  function checkAllOverlaps(){
+    world.checkOverlaps(world.mainCharacter);
+    for(var i = 0; i<world.entities.length;i++){
+      world.checkOverlaps(world.entities[i]);
+    }
+  }
+
+  this.checkOverlaps = function(entity){
+    if(world.mainCharacter.z_index <= entity.z_index && world.mainCharacter.id != entity.id){
+      if(hitboxOverlap(world.mainCharacter.getHitbox(), entity.getHitbox())){
+        try{world.mainCharacter.nature.overlap(that, world.mainCharacter, entity)}
+        catch(err){}
+      }
+    }
+    for(let i = 0; i<world.entities.length;i++){
+      if(world.entities[i].z_index <= entity.z_index && world.entities[i].id != entity.id){
+        if(hitboxOverlap(world.entities[i].getHitbox(), entity.getHitbox())){
+          try{world.entities[i].nature.overlap(world, world.entities[i], entity);}
+          catch(err){}
+        }
+      }
+    }
+    let overlap_box = hitboxOverlapMap(entity.getHitbox());
+    for(let i = overlap_box[0];i<overlap_box[2];i++){
+      for(let j = overlap_box[1];j<overlap_box[3];j++){
+        let map_element = world.currentMap.layout_data[j][i];
+        let element_prop = world.currentMap.properties[map_element];
+        try{element_prop.nature.overlap(that, element_prop, entity, i, j)}
+        catch(err){}
+      }
+    }
   }
 
   //Provides all integer value coordinates around a box. i.e. the coordinates of all map elements outside the perimiter of a box
@@ -348,15 +391,6 @@ function processCollision(hitbox_collision_x, hitbox_collision_y, hitbox_collisi
     resp.push([box[0]-1,box[3]]);
     resp.push([box[2],box[3]]);
     return resp;
-  }
-
-
-  //Tells all entities to move to new position based on collision status. Resets collisions of each entity.
-  function movePositions(){
-    world.mainCharacter.movePosition();
-    for(let i = 0;i<world.entities.length;i++){
-      world.entities[i].movePosition();
-    }
   }
 
   //Redraws map to ensure alignment

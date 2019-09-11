@@ -6,6 +6,7 @@ function Character(world_object) {
   var that = this;
   var current_animation_frame = "";
   this.isCharacter = true;
+  this.z_index = 2;
 
   //Status of the menu
   var menu = 0;
@@ -60,7 +61,7 @@ function Character(world_object) {
       }
     }
     current_animation_frame = that.defineAnimationFrame();
-    document.getElementById(current_animation_frame).style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;";
+    document.getElementById(current_animation_frame).style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;z-index:"+that.z_index;
   }
 
   //Updates the entity based on the current entity status.
@@ -68,7 +69,7 @@ function Character(world_object) {
     let img_width = scale*that.size;
     document.getElementById(current_animation_frame).style = "display:none;";
     current_animation_frame = that.defineAnimationFrame();
-    document.getElementById(current_animation_frame).style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;";
+    document.getElementById(current_animation_frame).style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;z-index:"+that.z_index;
   }
 
   //Computer controls

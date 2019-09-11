@@ -252,3 +252,10 @@ var movementLibrary = {
     return [[entity.x_pos, entity.y_pos],[entity.x_pos+x_move, entity.y_pos+y_move]];
   }
 }
+
+
+var overlapLibrary = {
+  "removeEntity":function(world, underElement, overElement){
+    world.remove_entity(underElement.id);
+  }
+}

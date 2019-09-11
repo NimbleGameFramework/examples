@@ -3,7 +3,7 @@
 function Entity(world_object) {
   var world = world_object;
   var that = this;
-  this.nature = undefined;
+  this.nature = new Nature(undefined, undefined, undefined, movementLibrary.still);
   this.isCharacter = false;
   this.properties = {};
   //Texture name of entity when he is facing left, down, right, up
@@ -42,6 +42,8 @@ function Entity(world_object) {
   this.y_hitbox_start = 0;
   this.x_hitbox_end = 1;
   this.y_hitbox_end = 1;
+
+  this.z_index = 1;
 
   this.size = 1;
   //Returns the coordinates of this entities hitbox
@@ -96,7 +98,7 @@ function Entity(world_object) {
       }
     }
     current_animation_frame = that.defineAnimationFrame();
-    document.getElementById(current_animation_frame).style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;";
+    document.getElementById(current_animation_frame).style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;z-index:"+that.z_index;
   }
 
   //Updates the entity based on the current entity status.
@@ -104,7 +106,19 @@ function Entity(world_object) {
     let img_width = scale*that.size;
     document.getElementById(current_animation_frame).style = "display:none;";
     current_animation_frame = that.defineAnimationFrame();
-    document.getElementById(current_animation_frame).style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;";
+    document.getElementById(current_animation_frame).style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;z-index:"+that.z_index;
+  }
+  //Removes all animation frames from window.
+  this.remove = function(){
+    let all_textures_listed = that.properties["texture"];
+    let textures_keys = Object.keys(all_textures_listed);
+    for(let i = 0; i<textures_keys.length;i++){
+      let animation_frames = that.properties["texture"][textures_keys[i]];
+      for(let j = 0;j<animation_frames.length;j++){
+        let image_x = document.getElementById(that.id+"_"+textures_keys[i]+"_"+j);
+        image_x.parentNode.removeChild(image_x);
+      }
+    }
   }
 
   this.advanceAnimationTime = function(){

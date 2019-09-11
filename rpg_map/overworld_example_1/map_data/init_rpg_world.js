@@ -52,7 +52,7 @@ var init_rpg_map_properties = {
   },
   "bed":{
     "texture":"../rpg_data/textures/bed.png",
-    "nature":simple_solid_nature
+    "nature":simple_empty_nature
   },
   "painting":{
     "texture":"../rpg_data/textures/painting.png",
@@ -196,6 +196,28 @@ var init_rpg_entity_properties = [{
     }
 
   },
+  {
+    "init": [{
+        "x_pos": 1,
+        "y_pos": 2,
+        "nature": new Nature( collisionLibrary.empty, overlapLibrary.removeEntity, undefined, movementLibrary.still),
+        "x_hitbox_start":0.3,
+        "y_hitbox_start":0.3,
+        "x_hitbox_end":0.6,
+        "y_hitbox_end":0.6
+      }],
+      "texture": {
+        "up": ["../rpg_data/textures/entity/orb.png"],
+        "down": ["../rpg_data/textures/entity/orb.png"],
+        "left": ["../rpg_data/textures/entity/orb.png"],
+        "right": ["../rpg_data/textures/entity/orb.png"],
+        "up_left": ["../rpg_data/textures/entity/orb.png"],
+        "up_right": ["../rpg_data/textures/entity/orb.png"],
+        "down_left": ["../rpg_data/textures/entity/orb.png"],
+        "down_right": ["../rpg_data/textures/entity/orb.png"],
+      }
+
+    },
   {
     "init": [{
       "x_pos": 5,

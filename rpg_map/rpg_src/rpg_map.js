@@ -1,3 +1,5 @@
+//Constructor for a map element, a set of elements that dont move relative to the mainCharacter
+//
 var Map = function(world_object_param) {
   var that = this;
   var world_object = world_object_param;
@@ -5,7 +7,6 @@ var Map = function(world_object_param) {
   //Initial loading of map
   this.layout_data = undefined;
   this.properties = undefined;
-  this.init_rpg_map_properties = undefined;
 
   //Determines the displacement of the map based on the location of the mainCharacter and the world scale
   var x_px_displacement = 0;
@@ -18,7 +19,7 @@ var Map = function(world_object_param) {
 
   //Initial sequence to load map and properties
   this.init = function(init_rpg_map_properties, rpg_map_data_path) {
-    that.init_rpg_map_properties = init_rpg_map_properties;
+    processProperties(init_rpg_map_properties);
     getMap(rpg_map_data_path);
   }
 
@@ -32,17 +33,23 @@ var Map = function(world_object_param) {
       }
     });
   };
-
-  function processMap(data) {
-    that.layout_data = $.csv.toArrays(data);
-    processProperties(that.init_rpg_map_properties);
-  };
-
   function processProperties(data) {
+    let tile_list = Object.keys(data);
+    for(let i = 0; i<tile_list.length;i++){
+      let default_tile_properties = {
+        z_index:0
+      }
+      data[tile_list[i]] = $.extend(default_tile_properties,data[tile_list[i]]);
+    }
     console.log(data);
     that.properties = data;
+  };
+  function processMap(data) {
+    that.layout_data = $.csv.toArrays(data);
     world_object.load_assertion();
   };
+
+
 
   //Draw function that places the images of the world elements inside the MapContent space (Does not paint character or entities)
   //Takes into account both window size and character location
@@ -58,7 +65,7 @@ var Map = function(world_object_param) {
 
         let current_square = current_row[j];
         let current_texture = that.properties[current_square]["texture"];
-        map_layer_inyection = map_layer_inyection + "<img id='map_img_" + i + "_" + j + "' class='map_element' src='" + current_texture + "' style='width:" + scale + "px;'>";
+        map_layer_inyection = map_layer_inyection + "<img id='map_img_" + i + "_" + j + "' class='map_element' src='" + current_texture + "' style='width:" + scale + "px;z-index:"+that.properties[current_square]["z_index"]+";'>";
       }
       map_layer_inyection = map_layer_inyection + "</div>";
     }
