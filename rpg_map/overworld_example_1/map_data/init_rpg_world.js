@@ -52,7 +52,7 @@ var init_rpg_map_properties = {
   },
   "bed":{
     "texture":"../rpg_data/textures/bed.png",
-    "nature":simple_empty_nature
+    "nature":simple_solid_nature
   },
   "painting":{
     "texture":"../rpg_data/textures/painting.png",
