@@ -48,7 +48,8 @@ var collisionLibrary = {
     return false
   },
   "pushable": function(world, entityCollider, entity, direction) {
-    //Pushble objects will allow movement if no collision detected in direction
+    //Pushable objects will allow movement if no collision detected in direction
+    //Since it requires a collision recursion check, it can cause a infinate loop if used incorectly
     if(!entityCollider.isCharacter){
       return false;
     }
