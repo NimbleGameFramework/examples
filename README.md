@@ -9,14 +9,12 @@ This framework helps you build web based rpg games. It tries to provide the tool
 5. Improve framework website
 
 ## Features missing until 1.0 release:
-1. Overlap interaction between elements.
-2. Custom button interaction definition.
-3. Simple smartphone controls.
-4. Lock movement during animation cycle.
-5. Standardize developer movement variable space
+1. Custom button interaction definition.
+2. Simple smartphone controls.
+3. Lock movement during animation cycle.
+4. Standardize developer movement variable space
 
 ## Future features:
-1. Allow binding html elements to entities (Include a video, text, or any html element in game)
 1. Visual Novel engine integration.
 2. RPG fighting mechanics.
 3. Optimized movement iteration (If element nature still don't include in movement list)

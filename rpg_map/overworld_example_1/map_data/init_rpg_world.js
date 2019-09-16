@@ -182,7 +182,8 @@ var init_rpg_entity_properties = [{
       "x_pos": 9,
       "y_pos": 9,
       "nature": new Nature( collisionLibrary.pushable, undefined, undefined, movementLibrary.still),
-      "size":0.75
+      "size":0.75,
+      "div_content":"<div style='color:white;font-size:8px;top:20%;left:25%;position:relative;height:80%;width:50%;'>Handle with care</div>"
     }],
     "texture": {
       "up": ["../rpg_data/textures/entity/box.png"],

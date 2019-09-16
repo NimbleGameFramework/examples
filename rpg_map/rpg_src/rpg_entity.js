@@ -44,7 +44,7 @@ function Entity(world_object) {
   this.y_hitbox_end = 1;
 
   this.z_index = 1;
-
+  this.div_content = "";
   this.size = 1;
   //Returns the coordinates of this entities hitbox
   this.getHitbox = function(){
@@ -97,6 +97,14 @@ function Entity(world_object) {
         document.getElementById("EntityContent").appendChild(imageObject);
       }
     }
+
+    var div_insertion = document.createElement("div");
+    div_insertion.style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;z-index:"+that.z_index;
+    div_insertion.innerHTML = that.div_content;
+    div_insertion.id = that.id+"div";
+    div_insertion.className = "entity_element";
+    document.getElementById("EntityContent").appendChild(div_insertion);
+
     current_animation_frame = that.defineAnimationFrame();
     document.getElementById(current_animation_frame).style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;z-index:"+that.z_index;
   }
@@ -107,6 +115,7 @@ function Entity(world_object) {
     document.getElementById(current_animation_frame).style = "display:none;";
     current_animation_frame = that.defineAnimationFrame();
     document.getElementById(current_animation_frame).style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;z-index:"+that.z_index;
+    document.getElementById(that.id+"div").style = "height:" + img_width + "px;"+"width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;z-index:"+that.z_index;
   }
   //Removes all animation frames from window.
   this.remove = function(){
