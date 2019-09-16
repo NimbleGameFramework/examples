@@ -6,7 +6,7 @@ function Character(world_object) {
   var that = this;
   var current_animation_frame = "";
   this.isCharacter = true;
-  this.z_index = 2;
+  this.z_index = 3;
 
   //Status of the menu
   var menu = 0;

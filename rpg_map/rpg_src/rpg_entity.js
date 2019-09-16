@@ -99,7 +99,8 @@ function Entity(world_object) {
     }
 
     var div_insertion = document.createElement("div");
-    div_insertion.style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;z-index:"+that.z_index;
+    let div_z_index = that.z_index+1;
+    div_insertion.style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;z-index:"+div_z_index+";";
     div_insertion.innerHTML = that.div_content;
     div_insertion.id = that.id+"div";
     div_insertion.className = "entity_element";
@@ -115,7 +116,8 @@ function Entity(world_object) {
     document.getElementById(current_animation_frame).style = "display:none;";
     current_animation_frame = that.defineAnimationFrame();
     document.getElementById(current_animation_frame).style = "width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;z-index:"+that.z_index;
-    document.getElementById(that.id+"div").style = "height:" + img_width + "px;"+"width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;z-index:"+that.z_index;
+    let div_z_index = that.z_index+1;
+    document.getElementById(that.id+"div").style = "height:" + img_width + "px;"+"width:" + img_width + "px;top:" +that.y_px_displacement + "px;left:" + that.x_px_displacement + "px;z-index:"+div_z_index+";";
   }
   //Removes all animation frames from window.
   this.remove = function(){
