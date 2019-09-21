@@ -58,3 +58,7 @@ div.gallery img {
 .run_button:active{
     background-color: slategray;
 }
+
+.button_space{
+    height:44px;
+}
