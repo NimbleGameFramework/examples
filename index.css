@@ -32,3 +32,18 @@ div.gallery img {
     width: 100%;
     height: auto;
 }
+
+.run_button{
+    background-color: lightgray;
+    padding:10px;
+    border-style:solid;
+    border-color:gray;
+}
+
+.run_button:hover{
+    background-color: lightslategray;
+}
+
+.run_button:active{
+    background-color: slategray;
+}
