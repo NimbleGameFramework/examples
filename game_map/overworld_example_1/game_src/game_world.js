@@ -2,131 +2,256 @@
 var width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 var hight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
+if(FilesContainer === undefined){
+  //If the project is being executed from within a zip file, this section would not be executed
+  //If the project is being executed as a normal http server, than this section allows the entities and maps to get their images using a direct source
+  //All 3 parameters are left empty.
+  //The getImgAsync function is synchronous in this case.
+  function FilesContainer(path, root_path_param, callback){
+  	var that = this;
+  	var root_path = root_path_param;
+  	this.getImgAsync = function(file_path, callback){
+      var respPromise = new Promise((resolve, error) => {
+        var img_resp = new Image;
+        img_resp.src = root_path+file_path;
+        callback(img_resp);
+        resolve();
+      });
+      return respPromise;
+  	};
+
+    this.getTextAsync = function(file_path, callback){
+      var respPromise = window.fetch(file_path)
+        .then(function(data){
+          return data.text().then(function(responseText){
+            callback(responseText)
+          });
+        })
+        .catch(function(e){
+          console.log("Failed to load text from "+file_path);
+          console.log(e)
+        });
+      return respPromise;
+    };
+    callback();
+  }
+
+  //Loads a zip file from a given path
+  var filesCapsule = new FilesContainer("", "",  function(){});
+};
+
+
 var World = function() {
   //Determines the size of the world (map, character and entities) on screen in pixels per unit(size of a single tile or size of character)
   var world = this;
   this.scale = 75;
   this.time_per_frame = 33;
 
-  this.mainCharacter = new Character(this);
-  this.currentMap = new Map(this);
+  this.mainCharacter = undefined;//new Character(this);
+  this.currentMap = undefined;//new Map(this);
+  //List of all entities
   this.entities = [];
+  //List of all entities that have a collide nature that is not empty
+  this.entitiesThatCollide = [];
+  //List of all entities that have a movement nature that is not still
+  this.entitiesThatMove = [];
+  //List of all entities that have a overlap nature that is not doNothing
+  this.entitiesThatOverlap = [];
+  //list of all entities that have a interact nature that is not doNothing
+  this.entitiesThatInteract = [];
+  //Interval timer that executes each round of actions and interactions
+  this.clock;
+  //True if clock is On, False if clock is Off
+  this.clockState;
+
   console.log("Creating world");
 
-  let rpgContentDiv = document.getElementById("rpgContent");
+  let gameContentDiv = document.getElementById("gameContent");
   let cssInyection = "<style>body{overflow:hidden}#mapLayer{position:absolute}.map_row{padding:0;margin:0;white-space:nowrap;overflow:hidden;}.map_element{padding:0;margin:0;overflow:hidden}.character_element{position:absolute;padding:0;margin:0;overflow:hidden}.entity_element{position:absolute;padding:0;margin:0;overflow:hidden}</style>";
   let divInyection = "<div id='MapContent'></div><div id='EntityContent'></div><div id='CharacterContent'></div><div id='MenuContent'></div>"
-  rpgContentDiv.innerHTML = cssInyection+divInyection;
+  gameContentDiv.innerHTML = cssInyection+divInyection;
   //Initializes the world building the character layer, the map layer and the entity layer
-  this.init = function(rpg_map_data_path, init_rpg_map_properties, init_rpg_character_properties, init_rpg_entity_properties) {
+  this.init = function(map_object, character_obj, entity_tuple) {
     console.log("Initializing character");
-    world.mainCharacter.init(init_rpg_character_properties);
+    world.mainCharacter = character_obj;
     console.log("Initializing map");
-    world.currentMap.init(init_rpg_map_properties, rpg_map_data_path);
+    world.currentMap = map_object;
     console.log("Initializing entities");
-    this.init_entities();
+    world.init_entities(entity_tuple);
+
+    world.render(function(){
+      console.log("Initializing world clock");
+      world.startClock()
+    });
   }
+
+  this.startClock = function(){
+    world.clock = setInterval(function() {
+      var t0 = performance.now()
+      checkAllCollisionsAndMove();
+      checkAllOverlaps();
+      world.updatePosition();
+      var t1 = performance.now()
+      //console.log(duration)
+      if((t1 - t0) > world.time_per_frame){
+        //What to do if frame rate is low
+      }
+    }, world.time_per_frame);
+    world.clockState = true;
+  }
+
+  this.stopClock = function(){
+    clearInterval(world.clock);
+    world.clockState = false;
+  }
+
+  this.toggleClock = function(){
+    if(world.clockState){
+      world.stopClock();
+    }
+    else{
+      world.startClock();
+    }
+  }
+
+  document.addEventListener("visibilitychange", function() {
+    world.mainCharacter.stopCharacter();
+    if(document.visibilityState == "hidden"){world.stopClock()}
+  })
 
   //allows other classes to inform the world that they have loaded
   //When all elements are loaded they are drawn
   var loading_assertion_array = [false, false];
   this.load_assertion = function(){
     for(let i = 0; i<loading_assertion_array.length; i++){
-
       if(loading_assertion_array[i]==false){
         loading_assertion_array[i] = true;
         if(i==loading_assertion_array.length-1){
           console.log("Drawing world")
-          world.draw();
-          calculateDisplacement();
-          console.log("Initializing world clock");
-          window.setInterval(function() {
-            checkAllCollisionsAndMove();
-            checkAllOverlaps();
-            world.update();
-          }, world.time_per_frame);
+          world.draw().then(function(){
+            console.log("Initializing world clock");
+            world.startClock()
+          });
+
         }
         return;
       }
     }
   }
-
-  this.init_entities = function(){
-    for(let i = 0; i<init_rpg_entity_properties.length; i++){
-      let current_entity_type = init_rpg_entity_properties[i];
-      for(let j = 0; j<current_entity_type.init.length;j++){
-        let entity_properties = {};
-        let new_entity = new Entity(world);
-        new_entity.id = "entity_"+i+"_"+j;
-        entity_properties.init = current_entity_type.init[j];
-        entity_properties.texture = current_entity_type.texture;
-        new_entity.init(entity_properties);
-        world.entities.push(new_entity);
-      }
-    }
-    world.draw_entities();
+  this.render = function(callback){
+    console.log("Drawing world")
+    world.draw().then(callback);
   }
 
-  this.draw_entities = function(){
-    for(let i = 0; i<world.entities.length;i++){
-      world.entities[i].draw(world.scale);
-    }
-  }
 
-  this.update_entities = function(){
-    for(let i = 0; i<world.entities.length;i++){
-      world.entities[i].update(world.scale);
+  this.init_entities = function(entity_tuple){
+    world.entities = entity_tuple[0];
+    world.entitiesThatCollide = entity_tuple[1];
+    world.entitiesThatMove = entity_tuple[2];
+    world.entitiesThatOverlap = entity_tuple[3];
+    world.entitiesThatInteract = entity_tuple[4];
+
+    world.entities.push(world.mainCharacter);
+    //Adds entity to the optimized small arrays.
+    //List of all entities that have a collide nature that is not empty
+    if(world.mainCharacter.nature.collision !== undefined){
+      world.entitiesThatCollide.push(world.mainCharacter);
     }
+
+    //List of all entities that have a movement nature that is not still
+    if(world.mainCharacter.nature.movement !== undefined){
+      world.entitiesThatMove.push(world.mainCharacter);
+    }
+
+    //List of all entities that have a overlap nature that is not doNothing
+    if(world.mainCharacter.nature.overlap !== undefined){
+      world.entitiesThatOverlap.push(world.mainCharacter);
+    }
+
+    //list of all entities that have a interact nature that is not doNothing
+    if(world.mainCharacter.nature.collision !== undefined){
+      world.entitiesThatInteract.push(world.mainCharacter);
+    }
+    //Draw entities
+    //ToRemove
+    //for(let i = 0; i<world.entities.length;i++){
+    //  loading_assertion_array.push(false);
+    //}
+    //load_assertion();
   }
 
   this.remove_entity = function(entity_id){
     for(let i = 0; i<world.entities.length;i++){
       if(world.entities[i].id==entity_id){
         world.entities[i].remove();
-        world.entities.splice(i,1);
+        world.entities.splice(i,1)
+        break;
+      }
+    }
+    for(let i = 0; i<world.entitiesThatMove.length;i++){
+      if(world.entitiesThatMove[i].id==entity_id){
+        world.entitiesThatMove.splice(i,1)
+        break;
+      }
+    }
+    for(let i = 0; i<world.entitiesThatCollide.length;i++){
+      if(world.entitiesThatCollide[i].id==entity_id){
+        world.entitiesThatCollide.splice(i,1)
+        break;
+      }
+    }
+    for(let i = 0; i<world.entitiesThatOverlap.length;i++){
+      if(world.entitiesThatOverlap[i].id==entity_id){
+        world.entitiesThatOverlap.splice(i,1)
+        break;
+      }
+    }
+    for(let i = 0; i<world.entitiesThatInteract.length;i++){
+      if(world.entitiesThatInteract[i].id==entity_id){
+        world.entitiesThatInteract.splice(i,1)
+        break;
       }
     }
   }
 
   //Draws everything in the game world based on current properties
   this.draw = function() {
-    calculateDisplacement();
-    world.mainCharacter.draw(world.scale);
-    world.currentMap.draw(world.scale);
+    //Draw entities
+    console.log("Drawing world")
+    var promise_array = []
+    for(let i = 0; i<world.entities.length;i++){
+      promise_array.push(world.entities[i].draw(world.scale));
+    }
+    promise_array.push(world.mainCharacter.draw(world.scale));
+    promise_array.push(world.currentMap.draw(world.scale));
+    return Promise.all(promise_array);
   }
 
   //Moves elements to position based on current properties.
-  this.update = function() {
-    calculateDisplacement();
-    world.mainCharacter.update(world.scale);
-    world.currentMap.update(world.scale);
-    world.update_entities();
-  }
-
-
-
-  //Calculates character, map, and entity pixel displacement on screen.
-  function calculateDisplacement() {
+  this.updatePosition = function() {
+    //Calculate character displacement based on screen
     x_character_px_displacement = width / 2 - (world.scale / 2);
     y_character_px_displacement = hight / 2 - (world.scale / 2);
-    world.mainCharacter.setDisplacement(x_character_px_displacement, y_character_px_displacement);
+    world.mainCharacter.updatePosition(x_character_px_displacement, y_character_px_displacement);
     let mainCharacter_current_pos = world.mainCharacter.getPos();
+    //Calculate other entity and map displacement based on character
     x_map_px_displacement = x_character_px_displacement - (mainCharacter_current_pos[0] * world.scale);
     y_map_px_displacement = y_character_px_displacement - (mainCharacter_current_pos[1] * world.scale);
-    world.currentMap.setDisplacement(x_map_px_displacement, y_map_px_displacement);
+    //world.currentMap.setDisplacement();
+    world.currentMap.updatePosition(x_map_px_displacement, y_map_px_displacement);
     for(let i = 0; i<world.entities.length;i++){
       let current_entity = world.entities[i];
-      current_entity.setDisplacement(x_map_px_displacement+(current_entity.x_pos*world.scale),y_map_px_displacement+current_entity.y_pos*world.scale);
+      current_entity.updatePosition(x_map_px_displacement+(current_entity.x_pos*world.scale),y_map_px_displacement+current_entity.y_pos*world.scale);
     }
   }
 
   //Checks collisions for each entity and the main character with the rest of the world
   function checkAllCollisionsAndMove(){
-    world.checkCollisions(world.mainCharacter, world.mainCharacter.predictMovement());
-    world.mainCharacter.movePosition();
-    for(var i = 0; i<world.entities.length;i++){
-      world.checkCollisions(world.entities[i], world.entities[i].predictMovement());
-      world.entities[i].movePosition();
+    //world.checkCollisions(world.mainCharacter, world.mainCharacter.predictMovement());
+    //world.mainCharacter.movePosition();
+    for(var i = 0; i<world.entitiesThatCollide.length;i++){
+      world.checkCollisions(world.entitiesThatCollide[i], world.entitiesThatCollide[i].predictMovement());
+      world.entitiesThatCollide[i].movePosition();
     }
   }
 
@@ -136,8 +261,8 @@ var World = function() {
   this.checkCollisions = function(entity_param, from_to) {
     var resp = true;
     resp = resp && checkEntityCollision(world.mainCharacter,entity_param, from_to);
-    for(let i = 0;i<world.entities.length;i++){
-      let current_entity = world.entities[i];
+    for(let i = 0;i<world.entitiesThatCollide.length;i++){
+      let current_entity = world.entitiesThatCollide[i];
       current_entity_check= checkEntityCollision(current_entity,entity_param, from_to);
       resp = current_entity_check && resp;
     }
@@ -189,7 +314,7 @@ var World = function() {
   //entityCollider is the entity in movment, entity is the other element.
   function checkEntityMapCollision(map_element, map_element_x_pos, map_element_y_pos, entityCollider, movementPath){
     let element_hitbox = [map_element_x_pos, map_element_y_pos, map_element_x_pos+1, map_element_y_pos+1];
-    let element_prop = world.currentMap.properties[map_element];
+    let element_prop = world.currentMap.gridBlocks[map_element];
     let entityCollider_hitbox = entityCollider.getHitbox();
     let x_total = movementPath[1][0]-movementPath[0][0];
     let y_total = movementPath[1][1]-movementPath[0][1];
@@ -342,23 +467,22 @@ function processCollision(hitbox_collision_x, hitbox_collision_y, hitbox_collisi
 
   function checkAllOverlaps(){
     world.checkOverlaps(world.mainCharacter);
-    for(var i = 0; i<world.entities.length;i++){
-      world.checkOverlaps(world.entities[i]);
+    for(var i = 0; i<world.entitiesThatOverlap.length;i++){
+      world.checkOverlaps(world.entitiesThatOverlap[i]);
     }
   }
 
   this.checkOverlaps = function(entity){
-    if(world.mainCharacter.z_index <= entity.z_index && world.mainCharacter.id != entity.id){
+    if(entity.id != world.mainCharacter.id && world.mainCharacter.z_index <= entity.z_index){
       if(hitboxOverlap(world.mainCharacter.getHitbox(), entity.getHitbox())){
-        try{world.mainCharacter.nature.overlap(that, world.mainCharacter, entity)}
-        catch(err){}
+        world.mainCharacter.nature.overlap(that, world.mainCharacter, entity)
+
       }
     }
-    for(let i = 0; i<world.entities.length;i++){
-      if(world.entities[i].z_index <= entity.z_index && world.entities[i].id != entity.id){
-        if(hitboxOverlap(world.entities[i].getHitbox(), entity.getHitbox())){
-          try{world.entities[i].nature.overlap(world, world.entities[i], entity);}
-          catch(err){}
+    for(let i = 0; i<world.entitiesThatOverlap.length;i++){
+      if(world.entitiesThatOverlap[i].z_index <= entity.z_index && world.entitiesThatOverlap[i].id != entity.id){
+        if(hitboxOverlap(world.entitiesThatOverlap[i].getHitbox(), entity.getHitbox())){
+            world.entitiesThatOverlap[i].nature.overlap(world, world.entitiesThatOverlap[i], entity);
         }
       }
     }
@@ -366,9 +490,10 @@ function processCollision(hitbox_collision_x, hitbox_collision_y, hitbox_collisi
     for(let i = overlap_box[0];i<overlap_box[2];i++){
       for(let j = overlap_box[1];j<overlap_box[3];j++){
         let map_element = world.currentMap.layout_data[j][i];
-        let element_prop = world.currentMap.properties[map_element];
-        try{element_prop.nature.overlap(that, element_prop, entity, i, j)}
-        catch(err){}
+        let element_prop = world.currentMap.gridBlocks[map_element];
+        if(element_prop.nature.overlap !== undefined){
+          element_prop.nature.overlap(world, element_prop, entity);
+        }
       }
     }
   }
@@ -397,6 +522,6 @@ function processCollision(hitbox_collision_x, hitbox_collision_y, hitbox_collisi
   document.getElementsByTagName("BODY")[0].onresize = function() {
     width = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
     hight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-    world.update();
+    world.updatePosition();
   };
 }

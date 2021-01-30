@@ -86,8 +86,10 @@ var collisionLibrary = {
     return true;
   },
   "reload": function(world,entityCollider,entity,direction){
-    //If any object collides with current object, page is reloaded, but not refreshed. Great for restarting maps
-    window.location.reload(false);
+    //If the character object collides with current object, page is reloaded, but not refreshed. Great for restarting maps
+    if(entityCollider.isCharacter){
+      window.location.reload(false);
+    }
   }
 }
 
@@ -256,6 +258,8 @@ var movementLibrary = {
 
 
 var overlapLibrary = {
+  "doNothing":function(world, underElement, overElement){
+  },
   "removeEntity":function(world, underElement, overElement){
     world.remove_entity(underElement.id);
   }
